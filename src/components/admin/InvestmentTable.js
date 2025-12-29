@@ -1,0 +1,2 @@
+// Admin Investment Table Component
+

@@ -1,0 +1,132 @@
+# Cursor AI Rules - GroandInvest MLM Platform
+
+## Project Context
+This is a USDT (TRC20) based MLM investment platform with referral system. All development must strictly follow the business rules defined in `PROJECT_RULES.md`.
+
+## Critical Business Rules (MUST FOLLOW)
+
+### Investment & Interest
+- Minimum investment: 10 USDT
+- Base daily interest: 0.50%
+- Interest increases by 0.05% for every 10 direct active referrals
+- Maximum interest cap: 2.00% per day
+- Interest reinvestment is NOT allowed
+- Special Investor Plan (10,000+ USDT): Fixed 1% daily interest, no referrals needed
+
+### Withdrawal Rules
+- Withdrawal locked until total investment reaches 500 USDT
+- Once 500 USDT reached: Interest withdrawal unlocked, monthly cycle starts
+- Minimum withdrawal: 20 USDT
+- Maximum withdrawal: 30% of monthly interest
+- One withdrawal per month only
+- Processing within 24 hours
+- Network/gas fee paid by user
+
+### Referral Income
+- ONLY applicable if referrer has minimum 500 USDT investment
+- NOT paid in cash, NOT added to interest
+- Directly added to investment balance only
+- Percentage slabs: 10-49 (0.5%), 50-90 (1.0%), 91-120 (1.5%), 121-150 (2.0%), 151+ (3.0%)
+
+### Authentication
+- Mobile number with OTP verification
+- One user = One account only
+- Multiple accounts = Permanent freeze
+
+### Safety Rules
+- 60 days inactivity: Interest paused
+- Large withdrawals: Manual admin approval
+- Suspicious activity: Account review and hold
+
+## Code Structure Rules
+
+### Frontend Structure
+- Auth pages (`/auth/*`): NO header, NO footer
+- User pages (`/user/*`): User header + User footer
+- Admin pages (`/admin/*`): Admin header only (no footer)
+
+### File Organization
+- Components: `/src/components/` (shared, auth, user, admin)
+- Utils: `/src/utils/` (api, auth, calculations, validations)
+- Context: `/src/context/` (AuthContext, UserContext)
+- Hooks: `/src/hooks/` (useAuth, useUser)
+- Middleware: `/src/middleware/` (auth, admin)
+
+### Backend Structure
+- Controllers: `/backend/controllers/`
+- Services: `/backend/services/` (business logic)
+- Schemas: `/backend/schemas/` (MongoDB models)
+- Routes: `/backend/routes/`
+- Middleware: `/backend/middleware/`
+
+## Development Guidelines
+
+### When Implementing Features
+1. Always check `PROJECT_RULES.md` first
+2. Validate business rules before coding
+3. Test edge cases (500 USDT threshold, 10 referrals, etc.)
+4. Ensure calculations match requirements exactly
+5. Use CSS variables from `globals.css` for styling
+
+### Calculation Functions
+- Use `/src/utils/calculations.js` for frontend calculations
+- Use `/backend/services/` for backend business logic
+- All calculations must be transparent and match PROJECT_RULES.md
+
+### API Endpoints
+- Base URL: Use `process.env.API_URL` (localhost:3500 in dev)
+- All endpoints must follow RESTful conventions
+- Include proper error handling and validation
+
+### Database Schema
+- User: mobile (unique), totalInvestment, interestBalance, referralCode, etc.
+- Investment: userId, amount, transactionHash, type (new/referral)
+- Withdrawal: userId, amount, status, requestDate, processedDate
+- Referral: referrerId, referredUserId, income, date
+
+### Security
+- Validate all inputs
+- Sanitize database inputs
+- Use JWT for authentication
+- Protect routes with middleware
+- Rate limiting on sensitive endpoints
+
+### Error Handling
+- User-friendly error messages
+- Consistent error response format
+- Proper HTTP status codes
+- Don't expose sensitive information
+
+## Styling Rules
+- Use CSS variables from `globals.css`
+- Color scheme: Navy blue (#4A5568), Dark purple (#6B46C1), Gray scale
+- Minimal, modern, light theme
+- Responsive design (mobile + desktop)
+
+## Testing Requirements
+Always test:
+1. 500 USDT threshold (withdrawal unlock)
+2. Referral income (500 USDT minimum requirement)
+3. Interest calculation with referral bonuses
+4. Monthly withdrawal limits
+5. Special Investor Plan (10,000+ USDT)
+6. Multiple account detection
+7. Inactivity handling (60 days)
+
+## Important Notes
+- Interest is NOT compounded
+- Referral income goes to investment balance, not wallet
+- All calculations must be accurate and match PROJECT_RULES.md
+- Keep code modular and maintainable
+- Follow existing code style and patterns
+
+## Reference Files
+- Business Rules: `PROJECT_RULES.md`
+- Environment Config: `.env` (root) and `backend/.env`
+- Global Styles: `src/app/globals.css`
+- Constants: `backend/utils/constants.js`
+
+---
+
+**ALWAYS REFER TO PROJECT_RULES.md FOR COMPLETE BUSINESS LOGIC DETAILS**
+
