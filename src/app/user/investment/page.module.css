@@ -1,2 +1,42 @@
-/* Investment page styles */
+.investmentPage {
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
+.card {
+  border: none;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.card-header {
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  border-top: none;
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground-secondary);
+  font-size: 0.875rem;
+}
+
+.table td {
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.badge {
+  font-weight: var(--font-weight-normal);
+  padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 767.98px) {
+  .investmentPage {
+    padding: 0 var(--spacing-sm);
+  }
+}

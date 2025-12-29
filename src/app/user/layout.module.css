@@ -5,9 +5,24 @@
   min-height: 100vh;
 }
 
+.dashboardLayout {
+  display: flex;
+  flex: 1;
+ 
+}
+
 .mainContent {
   flex: 1;
-  padding-top: var(--spacing-md);
-  padding-bottom: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+
+
+@media (max-width: 991.98px) {
+  .mainContent {
+    padding: var(--spacing-lg);
+  }
 }
 

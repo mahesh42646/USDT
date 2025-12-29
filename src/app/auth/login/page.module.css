@@ -1,2 +1,110 @@
-/* Login page styles */
+.authContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background) 100%);
+  padding: var(--spacing-lg);
+}
 
+.authCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-2xl);
+  width: 100%;
+  max-width: 450px;
+}
+
+.authCard h2 {
+  color: var(--foreground);
+  font-size: var(--font-size-3xl);
+}
+
+.authCard .form-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground);
+  margin-bottom: var(--spacing-sm);
+}
+
+.authCard .form-control {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  transition: border-color var(--transition-base);
+}
+
+.authCard .form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(107, 70, 193, 0.25);
+}
+
+.authCard .input-group-text {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-right: none;
+  color: var(--foreground-secondary);
+}
+
+.authCard .form-select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  padding: var(--spacing-md);
+  font-weight: var(--font-weight-medium);
+  background-color: var(--white);
+  color: var(--foreground);
+  transition: border-color var(--transition-base);
+}
+
+.authCard .form-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(107, 70, 193, 0.25);
+}
+
+.authCard .input-group .form-select + .form-control {
+  border-left: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.authCard .btn-primary {
+  padding: var(--spacing-md);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+}
+
+.authCard .btn-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+}
+
+.authCard .btn-link:hover {
+  color: var(--accent-light);
+}
+
+.authCard .alert {
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.recaptchaContainer {
+  display: flex;
+  justify-content: center;
+  margin: var(--spacing-lg) 0;
+  min-height: 78px;
+}
+
+.recaptchaContainer > div {
+  margin: 0 auto;
+}
+
+@media (max-width: 575.98px) {
+  .authCard {
+    padding: var(--spacing-xl);
+  }
+
+  .recaptchaContainer {
+    transform: scale(0.85);
+    transform-origin: center;
+  }
+}

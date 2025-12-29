@@ -1,0 +1,127 @@
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 260px;
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    position: relative;
+    transform: translateX(0);
+    height: auto;
+    min-height: calc(100vh - 80px);
+  }
+}
+
+.sidebarContent {
+  padding: var(--spacing-lg);
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--spacing-lg);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  color: var(--foreground);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  color: var(--foreground-secondary);
+  text-decoration: none;
+  transition: all var(--transition-base);
+  gap: var(--spacing-md);
+}
+
+.navItem:hover {
+  background: var(--background-secondary);
+  color: var(--accent);
+}
+
+.navItem.active {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.navIcon {
+  font-size: 1.25rem;
+  width: 24px;
+  text-align: center;
+}
+
+.mobileToggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  font-size: 1.5rem;
+  color: var(--foreground);
+  box-shadow: var(--shadow-md);
+}
+
+@media (min-width: 992px) {
+  .mobileToggle {
+    display: none;
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+@media (min-width: 992px) {
+  .overlay {
+    display: none;
+  }
+}
+
