@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { PLATFORM_NAME } from '@/utils/constants';
 import styles from './UserHeader.module.css';
 
 export default function UserHeader() {
@@ -68,7 +69,7 @@ export default function UserHeader() {
           {/* Logo */}
           <Link href={isLoggedIn ? '/user/dashboard' : '/'} className="navbar-brand d-flex align-items-center">
             <i className="bi bi-graph-up-arrow text-primary me-2" style={{ fontSize: '1.5rem' }}></i>
-            <span className={`${styles.logoText} fw-bold`}>GroandInvest</span>
+            <span className={`${styles.logoText} fw-bold`}>{PLATFORM_NAME}</span>
           </Link>
 
           {/* Mobile Toggle Button */}
@@ -158,7 +159,7 @@ export default function UserHeader() {
             <div className={styles.sidebarHeader}>
               <div className="d-flex align-items-center">
                 <i className="bi bi-graph-up-arrow text-primary me-2" style={{ fontSize: '1.5rem' }}></i>
-                <h5 className="mb-0">GroandInvest</h5>
+                <h5 className="mb-0">{PLATFORM_NAME}</h5>
               </div>
               <button
                 className={styles.closeBtn}

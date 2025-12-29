@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { PLATFORM_NAME, PLATFORM_DESCRIPTION, CONTACT_EMAIL, CONTACT_PHONE, SOCIAL_LINKS } from '@/utils/constants';
 import styles from './UserFooter.module.css';
 
 export default function UserFooter() {
@@ -33,14 +34,14 @@ export default function UserFooter() {
           <div className="col-lg-4 col-md-6 mb-4 mb-md-0">
             <div className="d-flex align-items-center mb-3">
               <i className="bi bi-graph-up-arrow text-primary me-2" style={{ fontSize: '1.5rem' }}></i>
-              <h5 className="fw-bold mb-0">GroandInvest</h5>
+              <h5 className="fw-bold mb-0">{PLATFORM_NAME}</h5>
             </div>
             <p className="text-muted small">
-              USDT-based investment platform with referral system. 
+              {PLATFORM_DESCRIPTION}. 
               Secure, transparent, and designed for long-term growth.
             </p>
             <div className="mt-3">
-              <span className="text-muted small">© {currentYear} GroandInvest. All rights reserved.</span>
+              <span className="text-muted small">© {currentYear} {PLATFORM_NAME}. All rights reserved.</span>
             </div>
           </div>
 
@@ -95,23 +96,23 @@ export default function UserFooter() {
             <ul className="list-unstyled">
               <li className="mb-2 d-flex align-items-center">
                 <i className="bi bi-envelope text-muted me-2"></i>
-                <span className="text-muted small">support@groandinvest.com</span>
+                <span className="text-muted small">{CONTACT_EMAIL}</span>
               </li>
               <li className="mb-2 d-flex align-items-center">
                 <i className="bi bi-telephone text-muted me-2"></i>
-                <span className="text-muted small">+1 (555) 123-4567</span>
+                <span className="text-muted small">{CONTACT_PHONE}</span>
               </li>
             </ul>
             <div className="mt-3">
               <p className="text-muted small mb-2">Follow Us:</p>
               <div className="d-flex gap-2">
-                <a href="#" className={styles.socialLink} aria-label="Facebook">
+                <a href={SOCIAL_LINKS.facebook} className={styles.socialLink} aria-label="Facebook">
                   <i className="bi bi-facebook"></i>
                 </a>
-                <a href="#" className={styles.socialLink} aria-label="Twitter">
+                <a href={SOCIAL_LINKS.twitter} className={styles.socialLink} aria-label="Twitter">
                   <i className="bi bi-twitter-x"></i>
                 </a>
-                <a href="#" className={styles.socialLink} aria-label="LinkedIn">
+                <a href={SOCIAL_LINKS.linkedin} className={styles.socialLink} aria-label="LinkedIn">
                   <i className="bi bi-linkedin"></i>
                 </a>
               </div>
