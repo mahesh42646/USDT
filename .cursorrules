@@ -98,10 +98,15 @@ This is a USDT (TRC20) based MLM investment platform with referral system. All d
 - Don't expose sensitive information
 
 ## Styling Rules
-- Use CSS variables from `globals.css`
+- **MAXIMUM Bootstrap usage** - Use Bootstrap classes whenever possible
+- **CSS only when required** - Only use custom CSS when Bootstrap cannot achieve the design
+- **Unique CSS class names** - All custom CSS classes must be unique, appropriate, and non-conflicting
+- Use CSS variables from `globals.css` for colors and spacing
 - Color scheme: Navy blue (#4A5568), Dark purple (#6B46C1), Gray scale
 - Minimal, modern, light theme
 - Responsive design (mobile + desktop)
+- Pixel-perfect design for all screen sizes
+- Use CSS Modules for component-specific styles to avoid conflicts
 
 ## Testing Requirements
 Always test:
@@ -119,6 +124,60 @@ Always test:
 - All calculations must be accurate and match PROJECT_RULES.md
 - Keep code modular and maintainable
 - Follow existing code style and patterns
+
+## Git Workflow & Team Collaboration Rules
+
+### Commit Messages
+- Use clear, descriptive commit messages
+- Format: `type: description`
+- Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
+- Examples:
+  - `feat: add user header with responsive sidebar`
+  - `fix: resolve Bootstrap JS SSR error`
+  - `refactor: update investment calculation logic`
+  - `style: improve mobile responsiveness`
+
+### Push to GitHub (After All Tasks)
+Before pushing, always:
+1. Check current status: `git status`
+2. Pull latest changes: `git pull origin main` (or current branch)
+3. Resolve any conflicts if they exist
+4. Stage changes: `git add .`
+5. Commit with clear message: `git commit -m "type: description"`
+6. Push: `git push origin main` (or current branch)
+
+### Conflict Resolution
+- Always pull before pushing: `git pull origin main`
+- If conflicts occur, resolve them manually
+- Test after resolving conflicts
+- Use `git merge` or `git rebase` appropriately
+- Never force push to main branch
+
+### Branch Strategy (For Team Work)
+- Create feature branches: `git checkout -b feature/feature-name`
+- Work on feature branch
+- Commit frequently with clear messages
+- Push feature branch: `git push origin feature/feature-name`
+- Create pull request for review
+- Merge to main after approval
+
+### Smooth Teamwork Commands
+```bash
+# Before starting work
+git pull origin main
+git checkout -b feature/your-feature-name
+
+# During work (frequent commits)
+git add .
+git commit -m "feat: add specific feature"
+git push origin feature/your-feature-name
+
+# After completing task
+git pull origin main  # Get latest changes
+git checkout main
+git merge feature/your-feature-name
+git push origin main
+```
 
 ## Reference Files
 - Business Rules: `PROJECT_RULES.md`
