@@ -9,18 +9,37 @@ import styles from './page.module.css';
 
 function InvestmentPage() {
   const { userData } = useAuth();
+  const [paymentMethod, setPaymentMethod] = useState('gateway'); // 'gateway', 'trc20', 'p2p'
   const [formData, setFormData] = useState({
     amount: '',
     transactionHash: '',
+    currency: 'USD',
   });
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [paymentUrl, setPaymentUrl] = useState(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     fetchInvestments();
+    
+    // Check for payment callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    const orderId = urlParams.get('orderId');
+    
+    if (paymentStatus === 'success' && orderId) {
+      setSuccess('Payment completed successfully! Your investment has been added.');
+      fetchInvestments();
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (paymentStatus === 'cancelled') {
+      setError('Payment was cancelled. Please try again.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
   const fetchInvestments = async () => {
@@ -41,6 +60,42 @@ function InvestmentPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleGatewayPayment = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setProcessingPayment(true);
+
+    const amount = parseFloat(formData.amount);
+    if (!amount || amount < 10) {
+      setError('Minimum investment is 10 USDT');
+      setProcessingPayment(false);
+      return;
+    }
+
+    try {
+      const response = await api.post('/api/payment/gateway/initiate', {
+        amount: amount,
+        currency: formData.currency || 'USD',
+        provider: 'coingate', // Default provider
+      });
+
+      if (response.payment && response.payment.paymentUrl) {
+        // Open payment gateway in new window
+        window.open(response.payment.paymentUrl, '_blank', 'width=800,height=600');
+        setSuccess('Payment gateway opened. Please complete the payment. Your investment will be added automatically after payment confirmation.');
+        setFormData({ amount: '', transactionHash: '', currency: 'USD' });
+      } else {
+        setError('Failed to initiate payment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Gateway payment error:', error);
+      setError(error.message || 'Failed to initiate payment. Please try again.');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -54,6 +109,14 @@ function InvestmentPage() {
       return;
     }
 
+    // Handle different payment methods
+    if (paymentMethod === 'gateway') {
+      await handleGatewayPayment(e);
+      setLoading(false);
+      return;
+    }
+
+    // For TRC20 and P2P, transaction hash is required
     if (!formData.transactionHash || formData.transactionHash.trim() === '') {
       setError('Transaction hash is required');
       setLoading(false);
@@ -67,7 +130,7 @@ function InvestmentPage() {
       });
 
       setSuccess('Investment added successfully and confirmed!');
-      setFormData({ amount: '', transactionHash: '' });
+      setFormData({ amount: '', transactionHash: '', currency: 'USD' });
       fetchInvestments(); // Refresh list
     } catch (error) {
       console.error('Investment error:', error);
@@ -158,10 +221,58 @@ function InvestmentPage() {
                 </div>
               )}
 
+              {/* Payment Method Selection */}
+              <div className="mb-4">
+                <label className="form-label fw-bold">Payment Method</label>
+                <div className="btn-group w-100" role="group">
+                  <input
+                    type="radio"
+                    className="btn-check"
+                    name="paymentMethod"
+                    id="methodGateway"
+                    value="gateway"
+                    checked={paymentMethod === 'gateway'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <label className="btn btn-outline-primary" htmlFor="methodGateway">
+                    <i className="bi bi-credit-card me-2"></i>
+                    Payment Gateway
+                  </label>
+
+                  <input
+                    type="radio"
+                    className="btn-check"
+                    name="paymentMethod"
+                    id="methodTRC20"
+                    value="trc20"
+                    checked={paymentMethod === 'trc20'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <label className="btn btn-outline-primary" htmlFor="methodTRC20">
+                    <i className="bi bi-wallet2 me-2"></i>
+                    TRC20 Transfer
+                  </label>
+
+                  <input
+                    type="radio"
+                    className="btn-check"
+                    name="paymentMethod"
+                    id="methodP2P"
+                    value="p2p"
+                    checked={paymentMethod === 'p2p'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <label className="btn btn-outline-primary" htmlFor="methodP2P">
+                    <i className="bi bi-people me-2"></i>
+                    P2P
+                  </label>
+                </div>
+              </div>
+
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="amount" className="form-label">
-                    Investment Amount (USDT)
+                    Investment Amount {paymentMethod === 'gateway' ? '(USD)' : '(USDT)'}
                   </label>
                   <div className="input-group">
                     <span className="input-group-text">$</span>
@@ -178,40 +289,77 @@ function InvestmentPage() {
                       required
                     />
                   </div>
-                  <small className="text-muted">Minimum investment: 10 USDT</small>
+                  <small className="text-muted">
+                    Minimum investment: 10 {paymentMethod === 'gateway' ? 'USD' : 'USDT'}
+                    {paymentMethod === 'gateway' && ' (will be converted to USDT)'}
+                  </small>
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="transactionHash" className="form-label">
-                    Transaction Hash (TRC20)
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="transactionHash"
-                    name="transactionHash"
-                    placeholder="Enter USDT transaction hash"
-                    value={formData.transactionHash}
-                    onChange={handleChange}
-                    required
-                  />
-                  <small className="text-muted">Enter the TRC20 transaction hash from your USDT transfer</small>
-                </div>
+                {paymentMethod === 'gateway' && (
+                  <div className="mb-3">
+                    <label htmlFor="currency" className="form-label">
+                      Payment Currency
+                    </label>
+                    <select
+                      className="form-select"
+                      id="currency"
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleChange}
+                    >
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="GBP">GBP - British Pound</option>
+                      <option value="USDT">USDT - Tether</option>
+                    </select>
+                    <small className="text-muted">You can pay with card or other methods. Amount will be converted to USDT.</small>
+                  </div>
+                )}
+
+                {(paymentMethod === 'trc20' || paymentMethod === 'p2p') && (
+                  <div className="mb-3">
+                    <label htmlFor="transactionHash" className="form-label">
+                      Transaction Hash {paymentMethod === 'trc20' ? '(TRC20)' : ''}
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control font-monospace"
+                      id="transactionHash"
+                      name="transactionHash"
+                      placeholder={paymentMethod === 'trc20' ? 'Enter TRC20 transaction hash' : 'Enter transaction hash or reference'}
+                      value={formData.transactionHash}
+                      onChange={handleChange}
+                      required
+                    />
+                    <small className="text-muted">
+                      {paymentMethod === 'trc20' 
+                        ? 'Enter the TRC20 transaction hash from your USDT transfer'
+                        : 'Enter the transaction hash or reference number from your P2P payment'}
+                    </small>
+                  </div>
+                )}
+
+                {paymentMethod === 'gateway' && (
+                  <div className="alert alert-info mb-3" role="alert">
+                    <i className="bi bi-info-circle me-2"></i>
+                    <strong>Payment Gateway:</strong> You'll be redirected to a secure payment page where you can pay using your card, bank transfer, or other available methods. The payment will be automatically converted to USDT and added to your investment.
+                  </div>
+                )}
 
                 <button
                   type="submit"
                   className="btn btn-primary w-100"
-                  disabled={loading}
+                  disabled={loading || processingPayment}
                 >
-                  {loading ? (
+                  {loading || processingPayment ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      Submitting...
+                      {paymentMethod === 'gateway' ? 'Processing...' : 'Submitting...'}
                     </>
                   ) : (
                     <>
-                      <i className="bi bi-check-circle me-2"></i>
-                      Submit Investment
+                      <i className={`bi ${paymentMethod === 'gateway' ? 'bi-credit-card' : 'bi-check-circle'} me-2`}></i>
+                      {paymentMethod === 'gateway' ? 'Pay with Gateway' : 'Submit Investment'}
                     </>
                   )}
                 </button>

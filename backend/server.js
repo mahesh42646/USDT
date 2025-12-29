@@ -34,6 +34,7 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/investment', require('./routes/investment'));
 app.use('/api/referral', require('./routes/referral'));
 app.use('/api/withdrawal', require('./routes/withdrawal'));
+app.use('/api/payment', require('./routes/payment'));
 
 // Health check
 app.get('/api/health', (req, res) => {
