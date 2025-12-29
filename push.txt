@@ -1,0 +1,10 @@
+
+
+git pull origin main
+
+
+git add .
+
+git commit -m "feat: update user header and footer with Bootstrap icons, remove mega menu, add simple navigation"
+
+git push origin main
