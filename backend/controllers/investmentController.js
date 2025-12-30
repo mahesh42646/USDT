@@ -42,7 +42,7 @@ exports.addInvestment = async (req, res) => {
       });
     }
 
-    // Create investment - Auto confirm for immediate processing
+    // Create investment - TRC20 payments are pending until admin verification
     const now = new Date();
     const lockInEndDate = new Date(now);
     lockInEndDate.setDate(lockInEndDate.getDate() + 90); // 90 days lock-in
@@ -52,47 +52,19 @@ exports.addInvestment = async (req, res) => {
       amount: parseFloat(amount),
       transactionHash: transactionHash.trim(),
       type: 'new',
-      status: 'confirmed', // Auto-confirm immediately
-      confirmedAt: now,
+      status: 'pending', // Pending until admin verifies TRC20 payment
       lockInEndDate: lockInEndDate,
       isAvailableForWithdrawal: false, // Locked for 90 days
     });
 
     await investment.save();
 
-    // Update user's total investment immediately
-    user.totalInvestment = (user.totalInvestment || 0) + investment.amount;
-    user.currentInvestmentBalance = (user.currentInvestmentBalance || 0) + investment.amount;
-    
-    // Award PlatoCoins (1:1 ratio with investment amount)
-    user.platoCoins = (user.platoCoins || 0) + investment.amount;
-    
-    await user.save();
-
-    // If this is user's first investment and they have a referrer, activate referral
-    if (user.referrerId && user.totalInvestment >= 10) {
-      const referral = await Referral.findOne({
-        referrerId: user.referrerId,
-        referredUserId: user._id,
-      });
-
-      if (referral && referral.status === 'pending') {
-        referral.status = 'active';
-        referral.activatedAt = new Date();
-        await referral.save();
-
-        // Update referrer's active referrals count
-        const referrer = await User.findById(user.referrerId);
-        if (referrer) {
-          referrer.directActiveReferrals = (referrer.directActiveReferrals || 0) + 1;
-          await referrer.save();
-        }
-      }
-    }
+    // DO NOT update user balance or award PlatoCoins until investment is confirmed by admin
+    // This will be done in the confirmInvestment function
 
     res.json({
       success: true,
-      message: 'Investment added successfully and confirmed!',
+      message: 'Investment request submitted successfully! It will be pending until admin verifies your TRC20 payment.',
       investment: {
         id: investment._id,
         amount: investment.amount,
@@ -163,13 +135,25 @@ exports.confirmInvestment = async (req, res) => {
     // Update investment status
     investment.status = 'confirmed';
     investment.confirmedAt = new Date();
+    
+    // Set lock-in end date if not already set
+    if (!investment.lockInEndDate) {
+      const lockInEndDate = new Date(investment.confirmedAt);
+      lockInEndDate.setDate(lockInEndDate.getDate() + 90);
+      investment.lockInEndDate = lockInEndDate;
+    }
+    
     await investment.save();
 
-    // Update user's total investment
+    // Update user's total investment and award PlatoCoins
     const user = await User.findById(investment.userId);
     if (user) {
       user.totalInvestment = (user.totalInvestment || 0) + investment.amount;
       user.currentInvestmentBalance = (user.currentInvestmentBalance || 0) + investment.amount;
+      
+      // Award PlatoCoins (1:1 ratio with investment amount)
+      user.platoCoins = (user.platoCoins || 0) + investment.amount;
+      
       await user.save();
 
       // If this is user's first investment and they have a referrer, activate referral
@@ -208,6 +192,59 @@ exports.confirmInvestment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to confirm investment',
+    });
+  }
+};
+
+// Reject investment (Admin function)
+exports.rejectInvestment = async (req, res) => {
+  try {
+    const { investmentId } = req.params;
+    const { reason } = req.body;
+    
+    const investment = await Investment.findById(investmentId);
+    if (!investment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Investment not found',
+      });
+    }
+
+    if (investment.status === 'confirmed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reject a confirmed investment',
+      });
+    }
+
+    if (investment.status === 'rejected') {
+      return res.status(400).json({
+        success: false,
+        message: 'Investment already rejected',
+      });
+    }
+
+    // Update investment status
+    investment.status = 'rejected';
+    if (reason) {
+      investment.adminNotes = reason;
+    }
+    await investment.save();
+
+    res.json({
+      success: true,
+      message: 'Investment rejected successfully',
+      investment: {
+        id: investment._id,
+        amount: investment.amount,
+        status: investment.status,
+      },
+    });
+  } catch (error) {
+    console.error('Reject investment error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to reject investment',
     });
   }
 };

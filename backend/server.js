@@ -6,6 +6,8 @@ require('dotenv').config();
 
 // Initialize daily interest cron job
 const dailyInterestCron = require('./cron/dailyInterestCron');
+// Initialize TRC20 verification cron job
+const trc20VerificationCron = require('./cron/trc20VerificationCron');
 
 const app = express();
 const PORT = process.env.PORT || 3500;
@@ -56,4 +58,12 @@ app.listen(PORT, () => {
   // Start daily interest cron job
   dailyInterestCron.start();
   console.log('Daily interest cron job started (runs at midnight UTC)');
+  
+  // Start TRC20 auto-verification cron job (if enabled)
+  if (process.env.AUTO_VERIFY_TRC20 === 'true') {
+    trc20VerificationCron.start();
+    console.log('TRC20 automatic verification cron job started (runs every 2 minutes)');
+  } else {
+    console.log('TRC20 auto-verification is disabled. Set AUTO_VERIFY_TRC20=true to enable.');
+  }
 });

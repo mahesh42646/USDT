@@ -7,5 +7,6 @@ const investmentController = require('../controllers/investmentController');
 router.post('/add', verifyFirebaseToken, investmentController.addInvestment);
 router.get('/history', verifyFirebaseToken, investmentController.getInvestmentHistory);
 router.put('/confirm/:investmentId', verifyFirebaseToken, investmentController.confirmInvestment);
+router.put('/reject/:investmentId', verifyFirebaseToken, investmentController.rejectInvestment);
 
 module.exports = router;

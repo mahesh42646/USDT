@@ -116,27 +116,30 @@ function InvestmentPage() {
       return;
     }
 
-    // For TRC20 and P2P, transaction hash is required
-    if (!formData.transactionHash || formData.transactionHash.trim() === '') {
-      setError('Transaction hash is required');
-      setLoading(false);
+    // For TRC20, transaction hash is required
+    if (paymentMethod === 'trc20') {
+      if (!formData.transactionHash || formData.transactionHash.trim() === '') {
+        setError('Transaction hash is required');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.post('/api/investment/add', {
+          amount: amount,
+          transactionHash: formData.transactionHash.trim(),
+        });
+
+        setSuccess('Investment request submitted! It will be pending until admin verifies your TRC20 payment.');
+        setFormData({ amount: '', transactionHash: '', currency: 'USD' });
+        fetchInvestments(); // Refresh list
+      } catch (error) {
+        console.error('Investment error:', error);
+        setError(error.message || 'Failed to submit investment. Please try again.');
+      } finally {
+        setLoading(false);
+      }
       return;
-    }
-
-    try {
-      const response = await api.post('/api/investment/add', {
-        amount: amount,
-        transactionHash: formData.transactionHash.trim(),
-      });
-
-      setSuccess('Investment added successfully and confirmed!');
-      setFormData({ amount: '', transactionHash: '', currency: 'USD' });
-      fetchInvestments(); // Refresh list
-    } catch (error) {
-      console.error('Investment error:', error);
-      setError(error.message || 'Failed to submit investment. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -252,20 +255,6 @@ function InvestmentPage() {
                     <i className="bi bi-wallet2 me-2"></i>
                     TRC20 Transfer
                   </label>
-
-                  <input
-                    type="radio"
-                    className="btn-check"
-                    name="paymentMethod"
-                    id="methodP2P"
-                    value="p2p"
-                    checked={paymentMethod === 'p2p'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <label className="btn btn-outline-primary" htmlFor="methodP2P">
-                    <i className="bi bi-people me-2"></i>
-                    P2P
-                  </label>
                 </div>
               </div>
 
@@ -316,27 +305,42 @@ function InvestmentPage() {
                   </div>
                 )}
 
-                {(paymentMethod === 'trc20' || paymentMethod === 'p2p') && (
-                  <div className="mb-3">
-                    <label htmlFor="transactionHash" className="form-label">
-                      Transaction Hash {paymentMethod === 'trc20' ? '(TRC20)' : ''}
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control font-monospace"
-                      id="transactionHash"
-                      name="transactionHash"
-                      placeholder={paymentMethod === 'trc20' ? 'Enter TRC20 transaction hash' : 'Enter transaction hash or reference'}
-                      value={formData.transactionHash}
-                      onChange={handleChange}
-                      required
-                    />
-                    <small className="text-muted">
-                      {paymentMethod === 'trc20' 
-                        ? 'Enter the TRC20 transaction hash from your USDT transfer'
-                        : 'Enter the transaction hash or reference number from your P2P payment'}
-                    </small>
-                  </div>
+                {paymentMethod === 'trc20' && (
+                  <>
+                    <div className="alert alert-info mb-3" role="alert">
+                      <h6 className="alert-heading">
+                        <i className="bi bi-info-circle me-2"></i>
+                        Send USDT (TRC20) to:
+                      </h6>
+                      <p className="mb-2">
+                        <code className="font-monospace" style={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>
+                          {process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || 'TYourWalletAddressHere'}
+                        </code>
+                      </p>
+                      <small>
+                        <strong>Network:</strong> TRC20 (TRON)<br />
+                        <strong>Token:</strong> USDT (Tether)
+                      </small>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="transactionHash" className="form-label">
+                        Transaction Hash (TRC20)
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control font-monospace"
+                        id="transactionHash"
+                        name="transactionHash"
+                        placeholder="Enter TRC20 transaction hash"
+                        value={formData.transactionHash}
+                        onChange={handleChange}
+                        required
+                      />
+                      <small className="text-muted">
+                        Enter the TRC20 transaction hash from your USDT transfer. Your investment will be pending until admin verifies the payment.
+                      </small>
+                    </div>
+                  </>
                 )}
 
                 {paymentMethod === 'gateway' && (

@@ -23,7 +23,7 @@ const paymentSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['gateway', 'trc20', 'p2p', 'other'],
+    enum: ['gateway', 'trc20'],
     required: true,
   },
   // Gateway payment details
