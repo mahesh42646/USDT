@@ -1,2 +1,89 @@
-/* User Profile page styles */
+.profilePage {
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
+.card {
+  border: none;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.card-header {
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.photoUpload {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-base);
+}
+
+.photoUpload:hover {
+  border-color: var(--accent);
+}
+
+.uploadLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  color: var(--foreground-secondary);
+}
+
+.uploadLabel i {
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+.previewContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.previewImage {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border);
+}
+
+.removeImage {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--danger);
+  transition: all var(--transition-base);
+}
+
+.removeImage:hover {
+  background: var(--danger);
+  color: var(--white);
+  border-color: var(--danger);
+}
+
+.badge {
+  font-weight: var(--font-weight-normal);
+  padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 767.98px) {
+  .profilePage {
+    padding: 0 var(--spacing-sm);
+  }
+}

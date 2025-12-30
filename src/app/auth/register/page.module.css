@@ -1,2 +1,85 @@
-/* Register page styles */
+.authContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background) 100%);
+  padding: var(--spacing-lg);
+}
 
+.authCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-2xl);
+  width: 100%;
+  max-width: 500px;
+}
+
+.photoUpload {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  text-align: center;
+  transition: border-color var(--transition-base);
+  cursor: pointer;
+}
+
+.photoUpload:hover {
+  border-color: var(--accent);
+}
+
+.uploadLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  margin: 0;
+}
+
+.uploadLabel i {
+  font-size: 2.5rem;
+  color: var(--accent);
+}
+
+.previewContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.previewImage {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+  border: 3px solid var(--accent);
+}
+
+.removeImage {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--error);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-full);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--transition-base);
+}
+
+.removeImage:hover {
+  transform: scale(1.1);
+}
+
+@media (max-width: 575.98px) {
+  .authCard {
+    padding: var(--spacing-xl);
+  }
+}

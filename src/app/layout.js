@@ -1,7 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import 'bootstrap/dist/css/bootstrap.min.css'
-
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import { AuthProvider } from '@/context/AuthContext';
+import HelpButton from '@/components/shared/HelpButton';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +25,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <AuthProvider>
+          {children}
+          <HelpButton />
+        </AuthProvider>
         <Script
           src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
           strategy="afterInteractive"

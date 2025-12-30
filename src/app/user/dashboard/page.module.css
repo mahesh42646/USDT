@@ -1,2 +1,70 @@
-/* User Dashboard styles */
+.dashboard {
+  
+  margin: 0 auto;
+}
 
+.statCard {
+  border: none;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  height: 100%;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.statIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.card {
+  border: none;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.card-header {
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  border-top: none;
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground-secondary);
+  font-size: 0.875rem;
+}
+
+.table td {
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.badge {
+  font-weight: var(--font-weight-normal);
+  padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 767.98px) {
+  .dashboard {
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .statCard {
+    margin-bottom: var(--spacing-md);
+  }
+}
