@@ -1,2 +1,237 @@
-/* Admin Dashboard styles */
+.dashboardContainer {
+  min-height: 100vh;
+  background: var(--background-secondary);
+  padding: 0;
+}
 
+.pageTitle {
+  color: var(--foreground);
+  font-size: var(--font-size-2xl);
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform var(--transition-base);
+}
+
+.cardLink:hover {
+  text-decoration: none;
+  color: inherit;
+  transform: translateY(-2px);
+}
+
+.statCard {
+  transition: all var(--transition-base);
+  border-left: 4px solid transparent;
+  box-shadow: var(--shadow-sm);
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(107, 70, 193, 0.1));
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.cardLink:hover .statCard::before {
+  opacity: 1;
+}
+
+.cardLink:hover .statCard {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.statCardprimary {
+  border-left-color: var(--accent);
+}
+
+.statCardsuccess {
+  border-left-color: var(--success);
+}
+
+.statCardinfo {
+  border-left-color: var(--info);
+}
+
+.statCardwarning {
+  border-left-color: var(--warning);
+}
+
+.statCarddanger {
+  border-left-color: var(--error);
+}
+
+.statIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: all var(--transition-base);
+}
+
+.statIconprimary {
+  background: linear-gradient(135deg, rgba(107, 70, 193, 0.1), rgba(107, 70, 193, 0.05));
+  color: var(--accent);
+}
+
+.statIconsuccess {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  color: var(--success);
+}
+
+.statIconinfo {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+  color: var(--info);
+}
+
+.statIconwarning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+  color: var(--warning);
+}
+
+.statIcondanger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  color: var(--error);
+}
+
+.cardLink:hover .statIcon {
+  transform: scale(1.1);
+}
+
+.statBadge {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+}
+
+.trend {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.trendUp {
+  color: var(--success);
+}
+
+.trendNeutral {
+  color: var(--foreground-secondary);
+}
+
+.statValueContainer {
+  margin-top: var(--spacing-md);
+}
+
+.statValue {
+  color: var(--foreground);
+  font-weight: var(--font-weight-bold);
+  font-size: 2.5rem;
+  line-height: 1.2;
+}
+
+.statSuffix {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-normal);
+  color: var(--foreground-secondary);
+  margin-left: var(--spacing-xs);
+}
+
+.quickActionCard {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform var(--transition-base);
+}
+
+.quickActionCard:hover {
+  text-decoration: none;
+  color: inherit;
+  transform: translateY(-2px);
+}
+
+.quickAction {
+  transition: all var(--transition-base);
+  background: var(--white);
+}
+
+.quickActionCard:hover .quickAction {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent) !important;
+}
+
+.quickActionIcon {
+  font-size: 2.5rem;
+  transition: transform var(--transition-base);
+}
+
+.quickActionCard:hover .quickActionIcon {
+  transform: scale(1.15);
+}
+
+@media (max-width: 991.98px) {
+  .headerActions {
+    margin-top: var(--spacing-md);
+  }
+  
+  .pageTitle {
+    font-size: var(--font-size-xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .statCard {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .statIcon {
+    width: 56px;
+    height: 56px;
+    font-size: 1.75rem;
+  }
+  
+  .statValue {
+    font-size: 2rem;
+  }
+  
+  .statSuffix {
+    font-size: 1rem;
+  }
+  
+  .quickActionIcon {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .headerActions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .headerActions .btn {
+    width: 100%;
+  }
+  
+  .statValue {
+    font-size: 1.75rem;
+  }
+}

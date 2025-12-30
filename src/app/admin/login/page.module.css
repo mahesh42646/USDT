@@ -1,0 +1,55 @@
+.loginContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background) 100%);
+  padding: var(--spacing-lg);
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 450px;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-2xl);
+}
+
+.logoContainer {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--spacing-lg);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 2rem;
+}
+
+.input-group-text {
+  background-color: var(--background-secondary);
+  border-color: var(--border);
+  color: var(--foreground-secondary);
+}
+
+.form-control:focus,
+.form-control:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.25rem rgba(107, 70, 193, 0.25);
+}
+
+@media (max-width: 576px) {
+  .loginCard {
+    padding: var(--spacing-xl);
+  }
+  
+  .logoContainer {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+}
+
