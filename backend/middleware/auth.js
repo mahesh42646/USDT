@@ -5,29 +5,33 @@ if (!admin.apps.length) {
   try {
     // Try to initialize with service account if available
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id,
-      });
-      console.log('Firebase Admin initialized with service account');
-    } else if (process.env.FIREBASE_PROJECT_ID) {
-      // For development, use project ID only (requires GOOGLE_APPLICATION_CREDENTIALS env var)
-      // Or use the REST API approach
-      admin.initializeApp({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-      });
-      console.log('Firebase Admin initialized with project ID');
+      try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+          projectId: process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id,
+        });
+        console.log('Firebase Admin initialized with service account');
+      } catch (parseError) {
+        console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY, using REST API fallback');
+      }
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      // Use credentials file if specified
+      try {
+        admin.initializeApp({
+          credential: admin.credential.applicationDefault(),
+        });
+        console.log('Firebase Admin initialized with application default credentials');
+      } catch (credError) {
+        console.warn('Failed to initialize with application default credentials, using REST API fallback');
+      }
     } else {
-      // Fallback to application default credentials
-      admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-      });
-      console.log('Firebase Admin initialized with application default credentials');
+      // No Firebase Admin credentials available - will use REST API verification
+      console.log('Firebase Admin not initialized - will use REST API for token verification');
     }
   } catch (error) {
-    console.error('Firebase Admin initialization error:', error);
-    // Don't throw, let it fail gracefully and log errors during token verification
+    // Silently fail - REST API will be used instead
+    console.log('Firebase Admin initialization skipped - using REST API fallback');
   }
 }
 
@@ -47,13 +51,17 @@ exports.verifyFirebaseToken = async (req, res, next) => {
     try {
       let decodedToken;
       
-      // Check if admin is initialized
+      // Check if admin is initialized and working
       if (admin.apps.length > 0) {
         // Use Admin SDK if available
         try {
           decodedToken = await admin.auth().verifyIdToken(token);
         } catch (adminError) {
-          console.error('Admin SDK verification error:', adminError);
+          // Only log if it's not a credential/initialization error
+          if (!adminError.message?.includes('Failed to determine project ID') && 
+              !adminError.message?.includes('ENOTFOUND metadata.google.internal')) {
+            console.error('Admin SDK verification error:', adminError.message);
+          }
           // Fall through to REST API verification
           decodedToken = null;
         }
@@ -88,7 +96,10 @@ exports.verifyFirebaseToken = async (req, res, next) => {
             throw new Error('User not found in token');
           }
         } catch (restError) {
-          console.error('REST API verification error:', restError);
+          // Only log if FIREBASE_API_KEY is configured
+          if (process.env.FIREBASE_API_KEY) {
+            console.error('REST API verification error:', restError.message);
+          }
           throw new Error('Token verification failed');
         }
       }

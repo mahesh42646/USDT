@@ -160,7 +160,7 @@ export default function Home() {
 
           <motion.div 
             {...staggerContainer}
-            className="row g-4"
+            className="row g-4 justify-content-center"
           >
             {[
               { step: '01', title: 'Register', desc: 'Sign up with your mobile number and verify with OTP', icon: 'bi-person-plus' },
@@ -172,15 +172,15 @@ export default function Home() {
               <motion.div 
                 key={index}
                 {...staggerItem}
-                className="col-md-4 col-lg-2"
+                className="col-lg-2 col-md-4 col-sm-6 col-12"
               >
-                <div className={`text-center ${styles.stepCard}`}>
+                <div className={styles.stepCard}>
                   <div className={styles.stepNumber}>{item.step}</div>
                   <div className={styles.stepIcon}>
                     <i className={`bi ${item.icon}`}></i>
                   </div>
-                  <h6 className="fw-bold mt-3 mb-2">{item.title}</h6>
-                  <p className="text-muted small mb-0">{item.desc}</p>
+                  <h6 className="fw-bold">{item.title}</h6>
+                  <p className="text-muted small">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -192,8 +192,8 @@ export default function Home() {
       <section className={`py-5 ${styles.plansSection}`}>
         <div className="container">
           <motion.div {...fadeInUp} className="text-center mb-5">
-            <h2 className="display-5 fw-bold mb-3">Investment Plans</h2>
-            <p className="lead text-muted">Choose the plan that suits you</p>
+            <h2 className={styles.plansTitle}>Investment Plans</h2>
+            <p className={styles.plansSubtitle}>Choose the plan that suits you</p>
           </motion.div>
 
           <div className="row g-4 justify-content-center">
@@ -201,38 +201,36 @@ export default function Home() {
               {...fadeInUp}
               className="col-lg-5 col-md-6"
             >
-              <div className={`card h-100 border-0 shadow-lg ${styles.planCard}`}>
-                <div className="card-body p-4">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h4 className="fw-bold mb-0">Standard Plan</h4>
-                    <span className="badge bg-primary">Popular</span>
-                  </div>
-                  <div className="mb-4">
-                    <h2 className={`display-4 fw-bold mb-2 ${styles.statNumber}`}>0.50%</h2>
-                    <p className="text-muted mb-0">Base Daily Interest</p>
-                  </div>
-                  <ul className="list-unstyled mb-4">
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      Minimum: 10 USDT
-                    </li>
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      Interest increases with referrals
-                    </li>
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      Max interest: 2.00% per day
-                    </li>
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      Withdrawal unlock at 500 USDT
-                    </li>
-                  </ul>
-                  <Link href="/auth/register" className="btn btn-primary w-100">
-                    Get Started
-                  </Link>
+              <div className={`${styles.planCard} ${styles.standardCard}`}>
+                <div className={styles.planHeader}>
+                  <h4 className={styles.planName}>Standard Plan</h4>
+                  <span className={styles.popularBadge}>Popular</span>
                 </div>
+                <div className={styles.planRate}>
+                  <h2 className={styles.interestRate}>0.50%</h2>
+                  <p className={styles.rateDescription}>Base Daily Interest</p>
+                </div>
+                <ul className={styles.planFeatures}>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>Minimum: 10 USDT</span>
+                  </li>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>Interest increases with referrals</span>
+                  </li>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>Max interest: 2.00% per day</span>
+                  </li>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>Withdrawal unlock at 500 USDT</span>
+                  </li>
+                </ul>
+                <Link href="/auth/register" className={styles.planButton}>
+                  Get Started
+                </Link>
               </div>
             </motion.div>
 
@@ -241,38 +239,36 @@ export default function Home() {
               transition={{ delay: 0.2 }}
               className="col-lg-5 col-md-6"
             >
-              <div className={`card h-100 border-2 border-primary shadow-lg ${styles.planCard} ${styles.premiumCard}`}>
-                <div className="card-body p-4">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h4 className="fw-bold mb-0">Special Investor</h4>
-                    <span className="badge bg-warning text-dark">Premium</span>
-                  </div>
-                  <div className="mb-4">
-                    <h2 className={`display-4 fw-bold mb-2 ${styles.statNumber}`}>1.00%</h2>
-                    <p className="text-muted mb-0">Fixed Daily Interest</p>
-                  </div>
-                  <ul className="list-unstyled mb-4">
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      Minimum: 10,000 USDT
-                    </li>
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      Fixed 1% daily interest
-                    </li>
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      No referral requirements
-                    </li>
-                    <li className="mb-2">
-                      <i className="bi bi-check-circle-fill text-success me-2"></i>
-                      Monthly withdrawal available
-                    </li>
-                  </ul>
-                  <Link href="/auth/register" className="btn btn-primary w-100">
-                    Get Started
-                  </Link>
+              <div className={`${styles.planCard} ${styles.premiumCard}`}>
+                <div className={styles.planHeader}>
+                  <h4 className={styles.planName}>Special Investor</h4>
+                  <span className={styles.premiumBadge}>Premium</span>
                 </div>
+                <div className={styles.planRate}>
+                  <h2 className={styles.interestRate}>1.00%</h2>
+                  <p className={styles.rateDescription}>Fixed Daily Interest</p>
+                </div>
+                <ul className={styles.planFeatures}>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>Minimum: 10,000 USDT</span>
+                  </li>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>Fixed 1% daily interest</span>
+                  </li>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>No referral requirements</span>
+                  </li>
+                  <li>
+                    <i className="bi bi-check-circle-fill"></i>
+                    <span>Monthly withdrawal available</span>
+                  </li>
+                </ul>
+                <Link href="/auth/register" className={styles.planButton}>
+                  Get Started
+                </Link>
               </div>
             </motion.div>
           </div>

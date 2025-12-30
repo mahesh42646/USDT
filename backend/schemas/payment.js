@@ -35,7 +35,6 @@ const paymentSchema = new mongoose.Schema({
   gatewayOrderId: {
     type: String,
     default: null,
-    index: true,
   },
   gatewayPaymentId: {
     type: String,
@@ -49,7 +48,6 @@ const paymentSchema = new mongoose.Schema({
   transactionHash: {
     type: String,
     default: null,
-    index: true,
   },
   // Payment status
   status: {

@@ -4,13 +4,11 @@ import { useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import UserHeader from '@/components/shared/UserHeader';
 import UserFooter from '@/components/shared/UserFooter';
-import HelpModal from '@/components/shared/HelpModal';
 import { CONTACT_EMAIL, CONTACT_PHONE, PLATFORM_NAME } from '@/utils/constants';
 import styles from './page.module.css';
 
 export default function SupportPage() {
   const heroRef = useRef(null);
-  const [showHelpModal, setShowHelpModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -80,13 +78,6 @@ export default function SupportPage() {
     }, 1500);
   };
 
-  const openHelpModal = () => {
-    setShowHelpModal(true);
-  };
-
-  const closeHelpModal = () => {
-    setShowHelpModal(false);
-  };
 
   return (
     <div className={styles.supportPage}>
@@ -151,46 +142,17 @@ export default function SupportPage() {
         </motion.div>
       </section>
 
-      {/* Quick Help Section */}
-      <section className={`py-5 ${styles.quickHelpSection}`}>
-        <div className="container">
-          <motion.div
-            {...fadeInUp}
-            className="text-center mb-5"
-          >
-            <h2 className="display-5 fw-bold mb-3">Need Quick Help?</h2>
-            <p className="lead text-muted">Get instant assistance with our help popup</p>
-          </motion.div>
-
-          <motion.div
-            {...fadeIn}
-            className="text-center"
-          >
-            <button
-              onClick={openHelpModal}
-              className={`btn btn-primary btn-lg px-5 py-3 ${styles.helpButton}`}
-            >
-              <i className="bi bi-question-circle me-2"></i>
-              Open Help Popup
-            </button>
-            <p className="text-muted mt-3 small">
-              Click the button above or use the floating "Need Help?" button on any page
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Contact Form Section */}
       <section className={`py-5 ${styles.contactFormSection}`}>
         <div className="container">
           <div className="row justify-content-center">
-            <div className="col-lg-8">
+            <div className="col-lg-10">
               <motion.div
                 {...fadeInUp}
                 className="text-center mb-5"
               >
-                <h2 className="display-5 fw-bold mb-3">Send Us a Message</h2>
-                <p className="lead text-muted">
+                <h2 className={styles.sectionTitle}>Send Us a Message</h2>
+                <p className={styles.sectionSubtitle}>
                   Fill out the form below and we'll get back to you as soon as possible
                 </p>
               </motion.div>
@@ -309,8 +271,8 @@ export default function SupportPage() {
             {...fadeInUp}
             className="text-center mb-5"
           >
-            <h2 className="display-5 fw-bold mb-3">Other Ways to Reach Us</h2>
-            <p className="lead text-muted">Choose the method that works best for you</p>
+            <h2 className={styles.sectionTitle}>Other Ways to Reach Us</h2>
+            <p className={styles.sectionSubtitle}>Choose the method that works best for you</p>
           </motion.div>
 
           <motion.div
@@ -384,8 +346,8 @@ export default function SupportPage() {
             {...fadeInUp}
             className="text-center mb-5"
           >
-            <h2 className="display-5 fw-bold mb-3">Common Questions</h2>
-            <p className="lead text-muted">Quick answers to frequently asked questions</p>
+            <h2 className={styles.sectionTitle}>Common Questions</h2>
+            <p className={styles.sectionSubtitle}>Quick answers to frequently asked questions</p>
           </motion.div>
 
           <motion.div
@@ -437,9 +399,6 @@ export default function SupportPage() {
           </motion.div>
         </div>
       </section>
-
-      {/* Help Modal */}
-      <HelpModal isOpen={showHelpModal} onClose={closeHelpModal} />
 
       <UserFooter />
     </div>

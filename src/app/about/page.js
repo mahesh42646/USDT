@@ -101,44 +101,46 @@ export default function AboutPage() {
         </motion.div>
       </section>
 
-      {/* Mission Section */}
+      {/* Mission & Vision Section */}
       <section className={`py-5 ${styles.missionSection}`}>
         <div className="container">
-          <div className="row align-items-center">
+          <div className="row align-items-center g-4">
             <motion.div
               {...fadeInUp}
               className="col-lg-6"
             >
-              <h2 className="display-5 fw-bold mb-4">Our Mission</h2>
-              <p className="lead mb-4">
-                To democratize investment opportunities by providing a secure, 
-                transparent, and accessible platform for individuals to grow 
-                their wealth through USDT-based investments.
-              </p>
-              <p className="text-muted mb-4">
-                We believe in creating value for our community through innovative 
-                investment solutions, fair reward systems, and exceptional service. 
-                Our platform is designed to empower investors with the tools and 
-                opportunities they need to achieve their financial goals.
-              </p>
-              <Link href="/auth/register" className="btn btn-primary btn-lg">
-                <i className="bi bi-rocket-takeoff me-2"></i>
-                Get Started
-              </Link>
+              <div className={styles.missionContent}>
+                <h2 className={styles.missionTitle}>Our Mission</h2>
+                <p className={styles.missionText}>
+                  To democratize investment opportunities by providing a secure, 
+                  transparent, and accessible platform for individuals to grow 
+                  their wealth through USDT-based investments.
+                </p>
+                <p className={styles.missionText}>
+                  We believe in creating value for our community through innovative 
+                  investment solutions, fair reward systems, and exceptional service. 
+                  Our platform is designed to empower investors with the tools and 
+                  opportunities they need to achieve their financial goals.
+                </p>
+                <Link href="/auth/register" className={styles.getStartedButton}>
+                  <i className="bi bi-rocket-takeoff me-2"></i>
+                  Get Started
+                </Link>
+              </div>
             </motion.div>
             <motion.div
               {...fadeIn}
               className="col-lg-6"
             >
-              <div className={styles.missionImage}>
-                <div className={styles.missionCard}>
-                  <i className="bi bi-bullseye" style={{ fontSize: '4rem', color: 'var(--accent)' }}></i>
-                  <h4 className="fw-bold mt-4 mb-3">Our Vision</h4>
-                  <p className="text-muted mb-0">
-                    To become the most trusted and innovative USDT investment 
-                    platform, empowering millions of investors worldwide.
-                  </p>
+              <div className={styles.visionCard}>
+                <div className={styles.visionIcon}>
+                  <i className="bi bi-bullseye"></i>
                 </div>
+                <h3 className={styles.visionTitle}>Our Vision</h3>
+                <p className={styles.visionText}>
+                  To become the most trusted and innovative USDT investment 
+                  platform, empowering millions of investors worldwide.
+                </p>
               </div>
             </motion.div>
           </div>
@@ -274,39 +276,35 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* How We Operate Section */}
       <section className={`py-5 ${styles.howItWorksSection}`}>
         <div className="container">
           <motion.div {...fadeInUp} className="text-center mb-5">
-            <h2 className="display-5 fw-bold mb-3">How We Operate</h2>
-            <p className="lead text-muted">Simple, transparent, and secure</p>
+            <h2 className={styles.sectionTitle}>How We Operate</h2>
+            <p className={styles.sectionSubtitle}>Simple, transparent, and secure</p>
           </motion.div>
 
           <motion.div 
             {...staggerContainer}
-            className="row g-4"
+            className="row g-4 justify-content-center"
           >
             {[
               { 
-                step: '01', 
                 title: 'Secure Platform', 
                 desc: 'Built on blockchain technology with USDT (TRC20) for secure transactions', 
                 icon: 'bi-shield-lock' 
               },
               { 
-                step: '02', 
                 title: 'Daily Rewards', 
                 desc: 'Earn daily interest automatically calculated and added to your balance', 
                 icon: 'bi-cash-stack' 
               },
               { 
-                step: '03', 
                 title: 'Referral System', 
                 desc: 'Build your network and earn referral income on every investment made', 
                 icon: 'bi-people-fill' 
               },
               { 
-                step: '04', 
                 title: 'Easy Withdrawal', 
                 desc: 'Monthly withdrawal system with processing within 24 hours', 
                 icon: 'bi-bank' 
@@ -315,15 +313,14 @@ export default function AboutPage() {
               <motion.div 
                 key={index}
                 {...staggerItem}
-                className="col-md-6 col-lg-3"
+                className="col-lg-3 col-md-6 col-sm-6 col-12"
               >
-                <div className={`text-center ${styles.stepCard}`}>
-                  <div className={styles.stepNumber}>{item.step}</div>
-                  <div className={styles.stepIcon}>
+                <div className={styles.operateCard}>
+                  <div className={styles.operateIcon}>
                     <i className={`bi ${item.icon}`}></i>
                   </div>
-                  <h6 className="fw-bold mt-3 mb-2">{item.title}</h6>
-                  <p className="text-muted small mb-0">{item.desc}</p>
+                  <h4 className={styles.operateTitle}>{item.title}</h4>
+                  <p className={styles.operateDescription}>{item.desc}</p>
                 </div>
               </motion.div>
             ))}

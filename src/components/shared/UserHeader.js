@@ -49,17 +49,17 @@ export default function UserHeader() {
   };
 
   const navItems = [
-    { name: 'Home', path: '/', icon: 'bi-house-door' },
-    { name: 'About', path: '/about', icon: 'bi-info-circle' },
-    { name: 'Contact', path: '/contact', icon: 'bi-envelope' },
+    { name: 'Home', path: '/', icon: 'bi-house-heart' },
+    { name: 'About', path: '/about', icon: 'bi-building' },
+    { name: 'Contact', path: '/contact', icon: 'bi-telephone' },
   ];
 
   const userNavItems = [
-    { name: 'Dashboard', path: '/user/dashboard', icon: 'bi-speedometer2' },
-    { name: 'Investment', path: '/user/investment', icon: 'bi-wallet2' },
-    { name: 'Referrals', path: '/user/referrals', icon: 'bi-people' },
-    { name: 'Withdrawal', path: '/user/withdrawal', icon: 'bi-cash-coin' },
-    { name: 'Profile', path: '/user/profile', icon: 'bi-person' },
+    { name: 'Dashboard', path: '/user/dashboard', icon: 'bi-grid-3x3-gap' },
+    { name: 'Investment', path: '/user/investment', icon: 'bi-piggy-bank' },
+    { name: 'Referrals', path: '/user/referrals', icon: 'bi-people-fill' },
+    { name: 'Withdrawal', path: '/user/withdrawal', icon: 'bi-wallet-fill' },
+    { name: 'Profile', path: '/user/profile', icon: 'bi-person-circle' },
   ];
 
   return (
@@ -68,7 +68,9 @@ export default function UserHeader() {
         <div className="container">
           {/* Logo */}
           <Link href={isLoggedIn ? '/user/dashboard' : '/'} className="navbar-brand d-flex align-items-center">
-            <i className="bi bi-graph-up-arrow text-primary me-2" style={{ fontSize: '1.5rem' }}></i>
+            <div className={styles.logoIcon}>
+              <i className="bi bi-currency-bitcoin"></i>
+            </div>
             <span className={`${styles.logoText} fw-bold`}>{PLATFORM_NAME}</span>
           </Link>
 
@@ -89,10 +91,15 @@ export default function UserHeader() {
                 <li key={item.path} className="nav-item">
                   <Link
                     href={item.path}
-                    className={`nav-link d-flex align-items-center ${pathname === item.path ? 'active' : ''}`}
+                    className={`nav-link d-flex align-items-center ${styles.navLink} ${pathname === item.path ? 'active' : ''}`}
                   >
-                    <i className={`${item.icon} me-2`}></i>
-                    {item.name}
+                    <span className={styles.navIconWrapper}>
+                      <i className={`${item.icon} ${styles.navIcon}`}></i>
+                    </span>
+                    <span className={styles.navText}>{item.name}</span>
+                    {pathname === item.path && (
+                      <span className={styles.activeIndicator}></span>
+                    )}
                   </Link>
                 </li>
               ))}
@@ -103,8 +110,8 @@ export default function UserHeader() {
               {isLoggedIn ? (
                 <>
                   <Link href="/user/dashboard" className={`btn btn-outline-primary ${styles.actionBtn}`}>
-                    <i className="bi bi-speedometer2 me-2"></i>
-                    Dashboard
+                    <i className="bi bi-grid-3x3-gap me-2"></i>
+                    <span>Dashboard</span>
                   </Link>
                   <div className="dropdown">
                     <button
@@ -120,12 +127,12 @@ export default function UserHeader() {
                     <ul className="dropdown-menu dropdown-menu-end">
                       <li>
                         <Link className="dropdown-item d-flex align-items-center" href="/user/profile">
-                          <i className="bi bi-person me-2"></i>Profile
+                          <i className="bi bi-person-circle me-2"></i>Profile
                         </Link>
                       </li>
                       <li>
                         <Link className="dropdown-item d-flex align-items-center" href="/user/dashboard">
-                          <i className="bi bi-speedometer2 me-2"></i>Dashboard
+                          <i className="bi bi-grid-3x3-gap me-2"></i>Dashboard
                         </Link>
                       </li>
                       <li><hr className="dropdown-divider" /></li>
@@ -140,7 +147,7 @@ export default function UserHeader() {
               ) : (
                 <Link href="/auth/login" className={`btn btn-primary ${styles.loginBtn}`}>
                   <i className="bi bi-box-arrow-in-right me-2"></i>
-                  Login
+                  <span>Login</span>
                 </Link>
               )}
             </div>
@@ -158,7 +165,9 @@ export default function UserHeader() {
           <div className={`${styles.mobileSidebar} ${showSidebar ? styles.sidebarOpen : ''}`}>
             <div className={styles.sidebarHeader}>
               <div className="d-flex align-items-center">
-                <i className="bi bi-graph-up-arrow text-primary me-2" style={{ fontSize: '1.5rem' }}></i>
+                <div className={styles.sidebarLogoIcon}>
+                  <i className="bi bi-currency-bitcoin"></i>
+                </div>
                 <h5 className="mb-0">{PLATFORM_NAME}</h5>
               </div>
               <button
@@ -180,8 +189,13 @@ export default function UserHeader() {
                     className={`${styles.sidebarLink} ${pathname === item.path ? styles.active : ''}`}
                     onClick={closeSidebar}
                   >
-                    <i className={`${item.icon} ${styles.sidebarIcon}`}></i>
-                    {item.name}
+                    <span className={styles.sidebarIconWrapper}>
+                      <i className={`${item.icon} ${styles.sidebarIcon}`}></i>
+                    </span>
+                    <span className={styles.sidebarText}>{item.name}</span>
+                    {pathname === item.path && (
+                      <span className={styles.sidebarActiveBadge}>Active</span>
+                    )}
                   </Link>
                 ))}
               </div>
@@ -196,8 +210,13 @@ export default function UserHeader() {
                       className={`${styles.sidebarLink} ${pathname === item.path ? styles.active : ''}`}
                       onClick={closeSidebar}
                     >
-                      <i className={`${item.icon} ${styles.sidebarIcon}`}></i>
-                      {item.name}
+                      <span className={styles.sidebarIconWrapper}>
+                        <i className={`${item.icon} ${styles.sidebarIcon}`}></i>
+                      </span>
+                      <span className={styles.sidebarText}>{item.name}</span>
+                      {pathname === item.path && (
+                        <span className={styles.sidebarActiveBadge}>Active</span>
+                      )}
                     </Link>
                   ))}
                 </div>

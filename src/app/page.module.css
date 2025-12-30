@@ -85,56 +85,13 @@
 
 /* How It Works Section */
 .howItWorksSection {
-  background-color: var(--background-secondary);
-}
-
-.stepCard {
-  padding: var(--spacing-lg);
-}
-
-.stepNumber {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--accent);
-  opacity: 0.2;
-  line-height: 1;
-}
-
-.stepIcon {
-  width: 70px;
-  height: 70px;
-  margin: -30px auto var(--spacing-md);
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-  font-size: 1.75rem;
-  box-shadow: var(--shadow-md);
-}
-
-/* Plans Section */
-.plansSection {
-  background-color: var(--white);
-}
-
-.planCard {
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
-  border-radius: var(--radius-lg);
-}
-
-.planCard:hover {
-  transform: translateY(-10px);
-  box-shadow: var(--shadow-xl) !important;
-}
-
-.premiumCard {
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--white) 100%);
   position: relative;
   overflow: hidden;
+  padding: var(--spacing-2xl) 0;
 }
 
-.premiumCard::before {
+.howItWorksSection::before {
   content: '';
   position: absolute;
   top: 0;
@@ -142,6 +99,258 @@
   right: 0;
   height: 4px;
   background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  opacity: 0.3;
+}
+
+.stepCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  position: relative;
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--border-light);
+  transition: all var(--transition-base);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 280px;
+  overflow: hidden;
+}
+
+.stepCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  transform: scaleX(0);
+  transition: transform var(--transition-base);
+}
+
+.stepCard:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--accent);
+}
+
+.stepCard:hover::before {
+  transform: scaleX(1);
+}
+
+.stepNumber {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  font-size: 4rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--accent);
+  opacity: 0.1;
+  line-height: 1;
+  z-index: 0;
+  transition: opacity var(--transition-base);
+}
+
+.stepCard:hover .stepNumber {
+  opacity: 0.15;
+}
+
+.stepIcon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto var(--spacing-lg);
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 2.5rem;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+  position: relative;
+  z-index: 1;
+}
+
+.stepCard:hover .stepIcon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 10px 30px rgba(70, 35, 154, 0.4);
+}
+
+.stepCard h6 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--foreground);
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  position: relative;
+  z-index: 1;
+}
+
+.stepCard p {
+  color: var(--foreground-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Plans Section */
+.plansSection {
+  background-color: var(--white);
+  padding: var(--spacing-2xl) 0;
+}
+
+.plansTitle {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--accent);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.2;
+}
+
+.plansSubtitle {
+  font-size: var(--font-size-lg);
+  color: var(--foreground-secondary);
+  margin: 0;
+}
+
+.planCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all var(--transition-base);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.planCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.standardCard {
+  border: 1px solid var(--border-light);
+}
+
+.premiumCard {
+  border: 2px solid var(--accent);
+  position: relative;
+}
+
+.planHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.planName {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--foreground);
+  margin: 0;
+}
+
+.popularBadge {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--white);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(70, 35, 154, 0.3);
+}
+
+.premiumBadge {
+  background: #ffc107;
+  color: var(--foreground);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.planRate {
+  margin-bottom: var(--spacing-xl);
+  text-align: left;
+}
+
+.interestRate {
+  font-size: 3.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--accent);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: 1;
+}
+
+.rateDescription {
+  font-size: var(--font-size-base);
+  color: var(--foreground-secondary);
+  margin: 0;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-xl) 0;
+  flex: 1;
+}
+
+.planFeatures li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+  color: var(--foreground-secondary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+.planFeatures li i {
+  color: #28a745;
+  font-size: var(--font-size-lg);
+  margin-right: var(--spacing-md);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.planFeatures li span {
+  flex: 1;
+}
+
+.planButton {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--white);
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 15px rgba(70, 35, 154, 0.3);
+  border: none;
+}
+
+.planButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(70, 35, 154, 0.4);
+  color: var(--white);
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
 }
 
 /* Benefits Section */
@@ -258,10 +467,26 @@
     font-size: 3rem;
   }
 
+  .howItWorksSection {
+    padding: var(--spacing-xl) 0;
+  }
+
+  .stepCard {
+    min-height: 260px;
+    padding: var(--spacing-lg);
+  }
+
   .stepIcon {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .stepNumber {
+    font-size: 3rem;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
   }
 
   .benefitsImage {
@@ -281,5 +506,66 @@
 
   .display-4 {
     font-size: 2.5rem;
+  }
+
+  .howItWorksSection {
+    padding: var(--spacing-xl) 0;
+  }
+
+  .stepCard {
+    min-height: 240px;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .stepIcon {
+    width: 70px;
+    height: 70px;
+    font-size: 1.75rem;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .stepCard h6 {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .stepCard p {
+    font-size: var(--font-size-xs);
+  }
+
+  .stepNumber {
+    font-size: 2.5rem;
+    top: var(--spacing-xs);
+    right: var(--spacing-xs);
+  }
+
+  .plansTitle {
+    font-size: var(--font-size-2xl);
+  }
+
+  .plansSubtitle {
+    font-size: var(--font-size-sm);
+  }
+
+  .planCard {
+    padding: var(--spacing-lg);
+  }
+
+  .interestRate {
+    font-size: 2rem;
+  }
+
+  .planName {
+    font-size: var(--font-size-lg);
+  }
+
+  .planFeatures li {
+    font-size: var(--font-size-sm);
+  }
+
+  .planButton {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-sm);
   }
 }
