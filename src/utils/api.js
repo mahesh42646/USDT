@@ -60,23 +60,53 @@ class ApiClient {
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, config);
       
-      // Check if response is JSON
+      // Read response body once
       const contentType = response.headers.get('content-type');
-      let data;
+      const isJson = contentType && contentType.includes('application/json');
       
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        // If not JSON, get text for error message
-        const text = await response.text();
-        throw new Error(`Server returned non-JSON response: ${response.status} ${response.statusText}`);
+      let data = null;
+      let responseText = '';
+      
+      // Read response as text first (can only be read once)
+      try {
+        responseText = await response.text();
+      } catch (readError) {
+        // If we can't read the response
+        if (!response.ok) {
+          throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+        }
+        return {};
       }
 
+      // Try to parse as JSON if content type suggests it
+      if (responseText && isJson) {
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          // If JSON parsing fails, data remains null
+          console.warn('Failed to parse JSON response:', parseError);
+        }
+      }
+
+      // Handle error responses
       if (!response.ok) {
-        throw new Error(data.message || data.error || `Request failed: ${response.status} ${response.statusText}`);
+        let errorMessage = `Request failed: ${response.status} ${response.statusText}`;
+        
+        if (data && typeof data === 'object') {
+          errorMessage = data.message || data.error || data.data?.message || errorMessage;
+        } else if (responseText) {
+          // Use response text if we couldn't parse JSON
+          errorMessage = responseText.length > 200 ? responseText.substring(0, 200) + '...' : responseText;
+        }
+        
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        error.statusText = response.statusText;
+        throw error;
       }
 
-      return data;
+      // Return parsed data for successful responses
+      return data !== null ? data : {};
     } catch (error) {
       // Re-throw with more context if it's a network error
       if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
