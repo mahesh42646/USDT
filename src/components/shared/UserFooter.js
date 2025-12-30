@@ -16,12 +16,12 @@ export default function UserFooter() {
       { name: 'Terms of Service', href: '/terms' },
     ],
     support: [
-      { name: 'Help Center', href: '/help' },
-      { name: 'FAQs', href: '/faq' },
+      { name: 'Help Center', href: '/helpcenter' },
+      // { name: 'FAQs', href: '/faq' },
       { name: 'Support', href: '/support' },
     ],
     legal: [
-      { name: 'Disclaimer', href: '/disclaimer' },
+      { name: 'Disclaimer', href: '/disclamier' },
       { name: 'Risk Disclosure', href: '/risk' },
     ],
   };

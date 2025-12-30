@@ -27,8 +27,17 @@ export function AuthProvider({ children }) {
           const userData = response.user || response;
           setUserData(userData);
         } catch (error) {
-          console.error('Error fetching user data:', error);
-          // User might not exist in backend yet - that's okay, they'll be redirected to register
+          // Silently handle authentication errors (invalid/expired token, user not found, etc.)
+          // These are expected scenarios and don't need to be logged as errors
+          const isAuthError = error.status === 401 || error.status === 403 || 
+                             error.message?.includes('token') || 
+                             error.message?.includes('unauthorized') ||
+                             error.message?.includes('Invalid or expired');
+          
+          if (!isAuthError) {
+            console.error('Error fetching user data:', error);
+          }
+          // User might not exist in backend yet or token is invalid - that's okay
           setUserData(null);
         }
       } else {
