@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSettings } from '@/context/SettingsContext';
+import { getPlatformName } from '@/utils/constants';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { PLATFORM_NAME } from '@/utils/constants';
 import styles from './UserHeader.module.css';
 
 export default function UserHeader() {
@@ -12,6 +13,7 @@ export default function UserHeader() {
   const [userName, setUserName] = useState('');
   const [showSidebar, setShowSidebar] = useState(false);
   const pathname = usePathname();
+  const { settings } = useSettings();
 
   useEffect(() => {
     // Check authentication status (will be replaced with actual auth context)
@@ -71,7 +73,7 @@ export default function UserHeader() {
             <div className={styles.logoIcon}>
               <i className="bi bi-currency-bitcoin"></i>
             </div>
-            <span className={`${styles.logoText} fw-bold`}>{PLATFORM_NAME}</span>
+            <span className={`${styles.logoText} fw-bold`}>{getPlatformName(settings)}</span>
           </Link>
 
           {/* Mobile Toggle Button */}
@@ -168,7 +170,7 @@ export default function UserHeader() {
                 <div className={styles.sidebarLogoIcon}>
                   <i className="bi bi-currency-bitcoin"></i>
                 </div>
-                <h5 className="mb-0">{PLATFORM_NAME}</h5>
+                <h5 className="mb-0">{getPlatformName(settings)}</h5>
               </div>
               <button
                 className={styles.closeBtn}

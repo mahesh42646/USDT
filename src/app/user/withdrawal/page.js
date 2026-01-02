@@ -523,6 +523,4 @@ function WithdrawalPage() {
       </div>
     </div>
   );
-}
-
-export default withAuth(WithdrawalPage);
+}export default withAuth(WithdrawalPage);

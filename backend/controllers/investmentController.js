@@ -229,9 +229,7 @@ exports.rejectInvestment = async (req, res) => {
     if (reason) {
       investment.adminNotes = reason;
     }
-    await investment.save();
-
-    res.json({
+    await investment.save();    res.json({
       success: true,
       message: 'Investment rejected successfully',
       investment: {

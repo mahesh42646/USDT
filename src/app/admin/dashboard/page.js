@@ -3,42 +3,89 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAdminAuth } from '@/context/AdminAuthContext';
+import { adminApi } from '@/utils/adminApi';
+import { withAdminAuth } from '@/middleware/admin';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { Pie, Line, Bar } from 'react-chartjs-2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import styles from './page.module.css';
 
-export default function AdminDashboard() {
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+function AdminDashboard() {
   const router = useRouter();
+  const { isAuthenticated } = useAdminAuth();
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
+    inactiveUsers: 0,
     totalInvestment: 0,
     totalInterestGenerated: 0,
     pendingWithdrawals: 0,
-    totalReferralsCount: 0
+    pendingWithdrawalsCount: 0,
+    totalReferralsCount: 0,
+    newUsersLast30Days: 0,
+    investmentLast30Days: 0
   });
+  const [charts, setCharts] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check admin authentication
-    const adminAuth = localStorage.getItem('adminAuth');
-    if (!adminAuth) {
-      router.push('/admin/login');
+    if (!isAuthenticated) {
       return;
     }
 
-    // Simulate loading stats data
-    setTimeout(() => {
-      setStats({
-        totalUsers: 1250,
-        activeUsers: 892,
-        totalInvestment: 2450000,
-        totalInterestGenerated: 125000,
-        pendingWithdrawals: 45000,
-        totalReferralsCount: 3420
-      });
-      setLoading(false);
-    }, 500);
-  }, [router]);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await adminApi.get('/api/admin/dashboard');
+        
+        if (response.success && response.data) {
+          setStats(response.data.stats || {});
+          setCharts(response.data.charts || null);
+        } else {
+          throw new Error(response.message || 'Failed to fetch dashboard data');
+        }
+      } catch (err) {
+        console.error('Dashboard fetch error:', err);
+        setError(err.message || 'Failed to load dashboard data');
+        if (err.status === 401 || err.status === 403) {
+          router.push('/admin/login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [isAuthenticated, router]);
 
   const statCards = [
     {
@@ -48,8 +95,6 @@ export default function AdminDashboard() {
       color: 'primary',
       suffix: '',
       link: '/admin/users',
-      trend: '+12.5%',
-      trendUp: true
     },
     {
       title: 'Active Users',
@@ -58,8 +103,6 @@ export default function AdminDashboard() {
       color: 'success',
       suffix: '',
       link: '/admin/users',
-      trend: '+8.3%',
-      trendUp: true
     },
     {
       title: 'Total Investment',
@@ -68,8 +111,6 @@ export default function AdminDashboard() {
       color: 'info',
       suffix: ' USDT',
       link: '/admin/investments',
-      trend: '+15.2%',
-      trendUp: true
     },
     {
       title: 'Total Interest Generated',
@@ -78,8 +119,6 @@ export default function AdminDashboard() {
       color: 'warning',
       suffix: ' USDT',
       link: '/admin/investments',
-      trend: '+22.1%',
-      trendUp: true
     },
     {
       title: 'Pending Withdrawals',
@@ -88,8 +127,6 @@ export default function AdminDashboard() {
       color: 'danger',
       suffix: ' USDT',
       link: '/admin/withdrawals',
-      trend: '5 requests',
-      trendUp: false
     },
     {
       title: 'Total Referrals',
@@ -98,21 +135,180 @@ export default function AdminDashboard() {
       color: 'primary',
       suffix: '',
       link: '/admin/referrals/direct',
-      trend: '+18.7%',
-      trendUp: true
     }
   ];
 
   const formatNumber = (num) => {
-    return new Intl.NumberFormat('en-US').format(num);
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num || 0);
   };
 
-  const quickActions = [
-    { title: 'View Users', icon: 'bi-people', link: '/admin/users', color: 'primary' },
-    { title: 'Manage Investments', icon: 'bi-wallet2', link: '/admin/investments', color: 'info' },
-    { title: 'Process Withdrawals', icon: 'bi-cash-coin', link: '/admin/withdrawals', color: 'warning' },
-    { title: 'View Referrals', icon: 'bi-diagram-3', link: '/admin/referrals/direct', color: 'success' }
-  ];
+  // Chart data preparation
+  const userStatusData = charts ? {
+    labels: ['Active Users', 'Inactive Users'],
+    datasets: [{
+      data: [charts.userStatus?.active || 0, charts.userStatus?.inactive || 0],
+      backgroundColor: ['#28a745', '#dc3545'],
+      borderColor: ['#28a745', '#dc3545'],
+      borderWidth: 2,
+    }],
+  } : null;
+
+  const withdrawalStatusData = charts ? {
+    labels: ['Pending', 'Approved', 'Rejected'],
+    datasets: [{
+      data: [
+        charts.withdrawalStatus?.pending || 0,
+        charts.withdrawalStatus?.approved || 0,
+        charts.withdrawalStatus?.rejected || 0,
+      ],
+      backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
+      borderColor: ['#ffc107', '#28a745', '#dc3545'],
+      borderWidth: 2,
+    }],
+  } : null;
+
+  const investmentStatusData = charts ? {
+    labels: ['Confirmed', 'Pending', 'Rejected'],
+    datasets: [{
+      data: [
+        charts.investmentStatus?.confirmed || 0,
+        charts.investmentStatus?.pending || 0,
+        charts.investmentStatus?.rejected || 0,
+      ],
+      backgroundColor: ['#17a2b8', '#ffc107', '#dc3545'],
+      borderColor: ['#17a2b8', '#ffc107', '#dc3545'],
+      borderWidth: 2,
+    }],
+  } : null;
+
+  const dailyTrendsData = charts?.dailyTrends ? {
+    labels: charts.dailyTrends.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+    datasets: [
+      {
+        label: 'New Users',
+        data: charts.dailyTrends.map(d => d.users),
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        fill: true,
+        tension: 0.4,
+      },
+      {
+        label: 'Investments (USDT)',
+        data: charts.dailyTrends.map(d => d.investments),
+        borderColor: '#17a2b8',
+        backgroundColor: 'rgba(23, 162, 184, 0.1)',
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y1',
+      },
+      {
+        label: 'Withdrawals (USDT)',
+        data: charts.dailyTrends.map(d => d.withdrawals),
+        borderColor: '#ffc107',
+        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y1',
+      },
+    ],
+  } : null;
+
+  const monthlyInvestmentData = charts?.monthlyInvestment ? {
+    labels: charts.monthlyInvestment.map(d => d.month),
+    datasets: [{
+      label: 'Monthly Investment (USDT)',
+      data: charts.monthlyInvestment.map(d => d.total),
+      backgroundColor: 'rgba(23, 162, 184, 0.8)',
+      borderColor: '#17a2b8',
+      borderWidth: 2,
+    }],
+  } : null;
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 15,
+          usePointStyle: true,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: { size: 14 },
+        bodyFont: { size: 13 },
+        displayColors: true,
+      },
+    },
+  };
+
+  const lineChartOptions = {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        position: 'left',
+        ticks: {
+          callback: function(value) {
+            return value.toLocaleString();
+          },
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+        },
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return formatNumber(value) + ' USDT';
+          },
+        },
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+  };
+
+  const barChartOptions = {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return formatNumber(value) + ' USDT';
+          },
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+  };
 
   return (
     <div className={styles.dashboardContainer}>
@@ -139,6 +335,11 @@ export default function AdminDashboard() {
             </div>
             <p className="mt-3 text-muted">Loading dashboard data...</p>
           </div>
+        ) : error ? (
+          <div className="alert alert-danger" role="alert">
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            {error}
+          </div>
         ) : (
           <>
             {/* Stats Cards */}
@@ -156,12 +357,6 @@ export default function AdminDashboard() {
                             <span className={`badge ${styles.statBadge} bg-${card.color} bg-opacity-10 text-${card.color}`}>
                               {card.title}
                             </span>
-                            {card.trend && (
-                              <div className={`mt-2 ${styles.trend} ${card.trendUp ? styles.trendUp : styles.trendNeutral}`}>
-                                <i className={`bi ${card.trendUp ? 'bi-arrow-up' : 'bi-dash'} me-1`}></i>
-                                <small>{card.trend}</small>
-                              </div>
-                            )}
                           </div>
                         </div>
                         <div className={styles.statValueContainer}>
@@ -182,38 +377,85 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Quick Actions Section */}
-            <div className="row g-4">
-              <div className="col-12">
-                <div className="card border-0 shadow-sm">
-                  <div className="card-header bg-white border-0 pb-0">
-                    <h5 className="fw-bold mb-0">Quick Actions</h5>
-                    <p className="text-muted small mb-0">Frequently used admin functions</p>
+            {/* Charts Section */}
+            {charts && (
+              <div className="row g-4 mb-4">
+                {/* User Status Pie Chart */}
+                <div className="col-md-6 col-lg-4">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-header bg-white border-0">
+                      <h5 className="fw-bold mb-0">User Status Distribution</h5>
+                    </div>
+                    <div className="card-body">
+                      <div style={{ height: '300px' }}>
+                        {userStatusData && <Pie data={userStatusData} options={chartOptions} />}
+                      </div>
+                    </div>
                   </div>
-                  <div className="card-body">
-                    <div className="row g-3">
-                      {quickActions.map((action, index) => (
-                        <div key={index} className="col-md-6 col-lg-3">
-                          <Link href={action.link} className={styles.quickActionCard}>
-                            <div className={`card h-100 border ${styles.quickAction} border-${action.color} border-opacity-25`}>
-                              <div className="card-body text-center p-4">
-                                <div className={`${styles.quickActionIcon} text-${action.color} mb-3`}>
-                                  <i className={`bi ${action.icon}`}></i>
-                                </div>
-                                <h6 className="fw-semibold mb-0">{action.title}</h6>
-                              </div>
-                            </div>
-                          </Link>
-                        </div>
-                      ))}
+                </div>
+
+                {/* Withdrawal Status Pie Chart */}
+                <div className="col-md-6 col-lg-4">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-header bg-white border-0">
+                      <h5 className="fw-bold mb-0">Withdrawal Status</h5>
+                    </div>
+                    <div className="card-body">
+                      <div style={{ height: '300px' }}>
+                        {withdrawalStatusData && <Pie data={withdrawalStatusData} options={chartOptions} />}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Investment Status Pie Chart */}
+                <div className="col-md-6 col-lg-4">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-header bg-white border-0">
+                      <h5 className="fw-bold mb-0">Investment Status</h5>
+                    </div>
+                    <div className="card-body">
+                      <div style={{ height: '300px' }}>
+                        {investmentStatusData && <Pie data={investmentStatusData} options={chartOptions} />}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Daily Trends Line Chart */}
+                <div className="col-md-12 col-lg-8">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-header bg-white border-0">
+                      <h5 className="fw-bold mb-0">Daily Trends (Last 30 Days)</h5>
+                    </div>
+                    <div className="card-body">
+                      <div style={{ height: '350px' }}>
+                        {dailyTrendsData && <Line data={dailyTrendsData} options={lineChartOptions} />}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Monthly Investment Bar Chart */}
+                <div className="col-md-12 col-lg-4">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-header bg-white border-0">
+                      <h5 className="fw-bold mb-0">Monthly Investment (Last 6 Months)</h5>
+                    </div>
+                    <div className="card-body">
+                      <div style={{ height: '350px' }}>
+                        {monthlyInvestmentData && <Bar data={monthlyInvestmentData} options={barChartOptions} />}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </div>
     </div>
   );
 }
+
+export default withAdminAuth(AdminDashboard);

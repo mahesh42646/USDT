@@ -1,18 +1,18 @@
 :root {
-  /* Colors - Minimal Modern Light Theme */
-  --primary: #4A5568; /* Navy Blue */
-  --primary-dark: #2D3748; /* Dark Navy */
-  --primary-light: #718096; /* Light Navy */
-  --accent: #46239a; /* Dark Purple */
-  --accent-light: #6e34e1; /* Light Purple */
+  /* Colors - Dynamic from Settings (defaults below) */
+  --primary: #4A5568; /* Navy Blue - Updated by SettingsContext */
+  --primary-dark: #2D3748; /* Dark Navy - Updated by SettingsContext */
+  --primary-light: #718096; /* Light Navy - Updated by SettingsContext */
+  --accent: #46239a; /* Dark Purple - Updated by SettingsContext */
+  --accent-light: #6e34e1; /* Light Purple - Updated by SettingsContext */
   
-  --background: #FFFFFF;
-  --background-secondary: #F7FAFC;
-  --foreground: #1A202C;
-  --foreground-secondary: #4A5568;
+  --background: #FFFFFF; /* Updated by SettingsContext */
+  --background-secondary: #F7FAFC; /* Updated by SettingsContext */
+  --foreground: #1A202C; /* Updated by SettingsContext */
+  --foreground-secondary: #4A5568; /* Updated by SettingsContext */
   
-  --border: #E2E8F0;
-  --border-light: #EDF2F7;
+  --border: #E2E8F0; /* Updated by SettingsContext */
+  --border-light: #EDF2F7; /* Updated by SettingsContext */
   
   --gray-50: #F9FAFB;
   --gray-100: #F3F4F6;
@@ -28,13 +28,13 @@
   --white: #FFFFFF;
   --black: #000000;
   
-  --success: #10B981;
-  --error: #EF4444;
-  --warning: #F59E0B;
-  --info: #3B82F6;
+  --success: #10B981; /* Updated by SettingsContext */
+  --error: #EF4444; /* Updated by SettingsContext */
+  --warning: #F59E0B; /* Updated by SettingsContext */
+  --info: #3B82F6; /* Updated by SettingsContext */
   
-  /* Typography */
-  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  /* Typography - Dynamic from Settings */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; /* Updated by SettingsContext */
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   
   --font-size-xs: 0.75rem; /* 12px */
@@ -92,12 +92,13 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-primary);
+  font-family: var(--font-primary) !important;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {

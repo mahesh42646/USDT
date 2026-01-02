@@ -337,6 +337,4 @@ function ReferralsPage() {
       </div>
     </div>
   );
-}
-
-export default withAuth(ReferralsPage);
+}export default withAuth(ReferralsPage);

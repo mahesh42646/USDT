@@ -1,27 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAdminAuth } from '@/context/AdminAuthContext';
+import { useSettings } from '@/context/SettingsContext';
+import { getPlatformName } from '@/utils/constants';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { PLATFORM_NAME } from '@/utils/constants';
 import styles from './AdminHeader.module.css';
 
 export default function AdminHeader({ onMenuClick }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [adminEmail, setAdminEmail] = useState('');
-
-  useEffect(() => {
-    const email = localStorage.getItem('adminEmail');
-    setAdminEmail(email || 'Admin');
-  }, []);
-
+  const { admin, logout } = useAdminAuth();
+  const { settings } = useSettings();
 
   const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    localStorage.removeItem('adminEmail');
-    router.push('/admin/login');
+    logout();
   };
 
 
@@ -31,7 +26,7 @@ export default function AdminHeader({ onMenuClick }) {
         <div className="container-fluid">
           <Link href="/admin/dashboard" className="navbar-brand d-flex align-items-center">
             <i className="bi bi-shield-lock text-primary me-2" style={{ fontSize: '1.5rem' }}></i>
-            <span className={`${styles.logoText} fw-bold`}>{PLATFORM_NAME} Admin</span>
+            <span className={`${styles.logoText} fw-bold`}>{getPlatformName(settings)} Admin</span>
           </Link>
 
           <button
@@ -61,7 +56,7 @@ export default function AdminHeader({ onMenuClick }) {
                   <li>
                     <div className="dropdown-item-text">
                       <small className="text-muted">Logged in as</small>
-                      <div className="fw-semibold">{adminEmail}</div>
+                      <div className="fw-semibold">{admin?.email || 'Admin'}</div>
                     </div>
                   </li>
                   <li><hr className="dropdown-divider" /></li>

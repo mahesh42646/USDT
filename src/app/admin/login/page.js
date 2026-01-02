@@ -1,18 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAdminAuth } from '@/context/AdminAuthContext';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import styles from './page.module.css';
 
 export default function AdminLogin() {
   const router = useRouter();
+  const { login, isAuthenticated, loading: authLoading } = useAdminAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated (only after auth check is complete)
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/admin/dashboard');
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   const handleChange = (e) => {
     setFormData({
@@ -22,26 +31,33 @@ export default function AdminLogin() {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Hardcoded credentials for UI demo
-    if (formData.email === 'admin1122@gmail.com' && formData.password === 'Admin@pass') {
-      // Store admin auth in localStorage for UI demo
-      localStorage.setItem('adminAuth', 'true');
-      localStorage.setItem('adminEmail', formData.email);
-      
-      setTimeout(() => {
-        setLoading(false);
-        router.push('/admin/dashboard');
-      }, 500);
-    } else {
+    try {
+      await login(formData.email, formData.password);
+      router.push('/admin/dashboard');
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
       setLoading(false);
-      setError('Invalid email or password');
     }
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className={styles.loginContainer}>
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-3 text-muted">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.loginContainer}>
@@ -77,7 +93,7 @@ export default function AdminLogin() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="admin1122@gmail.com"
+                placeholder="admin@gmail.com"
                 required
               />
             </div>

@@ -13,7 +13,7 @@ function InvestmentPage() {
   const [formData, setFormData] = useState({
     amount: '',
     transactionHash: '',
-    currency: 'USD',
+    currency: 'USDT',
   });
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -67,8 +67,9 @@ function InvestmentPage() {
     setProcessingPayment(true);
 
     const amount = parseFloat(formData.amount);
-    if (!amount || amount < 10) {
-      setError('Minimum investment is 10 USDT');
+    const minAmount = 9.69; // NOWPayments exact minimum for testing
+    if (!amount || amount < minAmount) {
+      setError(`Minimum investment is ${minAmount} USDT (NOWPayments minimum for testing)`);
       setProcessingPayment(false);
       return;
     }
@@ -76,17 +77,61 @@ function InvestmentPage() {
     try {
       const response = await api.post('/api/payment/gateway/initiate', {
         amount: amount,
-        currency: formData.currency || 'USD',
-        provider: 'coingate', // Default provider
+        currency: 'USDT', // Always use USDT
+        provider: 'nowpayments', // NOWPayments payment gateway
       });
 
-      if (response.payment && response.payment.paymentUrl) {
-        // Open payment gateway in new window
-        window.open(response.payment.paymentUrl, '_blank', 'width=800,height=600');
-        setSuccess('Payment gateway opened. Please complete the payment. Your investment will be added automatically after payment confirmation.');
-        setFormData({ amount: '', transactionHash: '', currency: 'USD' });
+      if (response.success && response.payment && response.payment.paymentUrl) {
+        // Redirect to payment gateway
+        setSuccess('Redirecting to payment gateway...');
+        setFormData({ amount: '', transactionHash: '', currency: 'USDT' });
+        
+        // Open payment gateway in new window/tab
+        const paymentWindow = window.open(
+          response.payment.paymentUrl,
+          'payment',
+          'width=800,height=600,scrollbars=yes,resizable=yes'
+        );
+
+        // Monitor payment window (optional - for better UX)
+        if (paymentWindow) {
+          const checkPayment = setInterval(async () => {
+            try {
+              if (paymentWindow.closed) {
+                clearInterval(checkPayment);
+                // Wait a bit for webhook to process
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                // Check payment status and force update if needed
+                const statusResponse = await api.get(`/api/payment/status/${response.payment.orderId}`);
+                if (statusResponse.success) {
+                  if (statusResponse.payment.status === 'completed') {
+                    setSuccess('Payment completed successfully! Your investment has been added.');
+                    fetchInvestments();
+                  } else {
+                    // Payment might be processing, check again after delay
+                    setTimeout(async () => {
+                      const retryResponse = await api.get(`/api/payment/status/${response.payment.orderId}`);
+                      if (retryResponse.success && retryResponse.payment.status === 'completed') {
+                        setSuccess('Payment completed successfully! Your investment has been added.');
+                        fetchInvestments();
+                      }
+                    }, 5000);
+                  }
+                }
+              }
+            } catch (err) {
+              console.error('Payment status check error:', err);
+            }
+          }, 2000);
+
+          // Clear interval after 5 minutes
+          setTimeout(() => clearInterval(checkPayment), 300000);
+        } else {
+          // If popup blocked, redirect in same window
+          window.location.href = response.payment.paymentUrl;
+        }
       } else {
-        setError('Failed to initiate payment. Please try again.');
+        setError(response.message || 'Failed to initiate payment. Please try again.');
       }
     } catch (error) {
       console.error('Gateway payment error:', error);
@@ -103,8 +148,9 @@ function InvestmentPage() {
     setLoading(true);
 
     const amount = parseFloat(formData.amount);
-    if (!amount || amount < 10) {
-      setError('Minimum investment is 10 USDT');
+    const minAmount = 9.69; // NOWPayments exact minimum for testing
+    if (!amount || amount < minAmount) {
+      setError(`Minimum investment is ${minAmount} USDT (NOWPayments minimum for testing)`);
       setLoading(false);
       return;
     }
@@ -131,7 +177,7 @@ function InvestmentPage() {
         });
 
         setSuccess('Investment request submitted! It will be pending until admin verifies your TRC20 payment.');
-        setFormData({ amount: '', transactionHash: '', currency: 'USD' });
+        setFormData({ amount: '', transactionHash: '', currency: 'USDT' });
         fetchInvestments(); // Refresh list
       } catch (error) {
         console.error('Investment error:', error);
@@ -261,17 +307,17 @@ function InvestmentPage() {
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="amount" className="form-label">
-                    Investment Amount {paymentMethod === 'gateway' ? '(USD)' : '(USDT)'}
+                    Investment Amount (USDT)
                   </label>
                   <div className="input-group">
-                    <span className="input-group-text">$</span>
+                    <span className="input-group-text">USDT</span>
                     <input
                       type="number"
                       className="form-control"
                       id="amount"
                       name="amount"
-                      placeholder="10.00"
-                      min="10"
+                      placeholder="9.69"
+                      min="9.69"
                       step="0.01"
                       value={formData.amount}
                       onChange={handleChange}
@@ -279,31 +325,9 @@ function InvestmentPage() {
                     />
                   </div>
                   <small className="text-muted">
-                    Minimum investment: 10 {paymentMethod === 'gateway' ? 'USD' : 'USDT'}
-                    {paymentMethod === 'gateway' && ' (will be converted to USDT)'}
+                    Minimum investment: 9.69 USDT (NOWPayments exact minimum for testing)
                   </small>
                 </div>
-
-                {paymentMethod === 'gateway' && (
-                  <div className="mb-3">
-                    <label htmlFor="currency" className="form-label">
-                      Payment Currency
-                    </label>
-                    <select
-                      className="form-select"
-                      id="currency"
-                      name="currency"
-                      value={formData.currency}
-                      onChange={handleChange}
-                    >
-                      <option value="USD">USD - US Dollar</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="GBP">GBP - British Pound</option>
-                      <option value="USDT">USDT - Tether</option>
-                    </select>
-                    <small className="text-muted">You can pay with card or other methods. Amount will be converted to USDT.</small>
-                  </div>
-                )}
 
                 {paymentMethod === 'trc20' && (
                   <>
@@ -346,7 +370,12 @@ function InvestmentPage() {
                 {paymentMethod === 'gateway' && (
                   <div className="alert alert-info mb-3" role="alert">
                     <i className="bi bi-info-circle me-2"></i>
-                    <strong>Payment Gateway:</strong> You'll be redirected to a secure payment page where you can pay using your card, bank transfer, or other available methods. The payment will be automatically converted to USDT and added to your investment.
+                    <strong>Payment Gateway:</strong> You'll be redirected to a secure payment page where you can pay using USDT (TRC20), card, bank transfer, or other cryptocurrency. Your investment will be added automatically after payment confirmation.
+                    <br />
+                    <small className="d-block mt-2">
+                      <i className="bi bi-shield-check me-1"></i>
+                      Secure payment processing. Your investment will be added automatically after payment confirmation.
+                    </small>
                   </div>
                 )}
 
@@ -457,6 +486,4 @@ function InvestmentPage() {
       </div>
     </div>
   );
-}
-
-export default withAuth(InvestmentPage);
+}export default withAuth(InvestmentPage);

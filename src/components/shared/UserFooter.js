@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useSettings } from '@/context/SettingsContext';
+import { getPlatformName, PLATFORM_DESCRIPTION, CONTACT_EMAIL, CONTACT_PHONE, SOCIAL_LINKS } from '@/utils/constants';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { PLATFORM_NAME, PLATFORM_DESCRIPTION, CONTACT_EMAIL, CONTACT_PHONE, SOCIAL_LINKS } from '@/utils/constants';
 import styles from './UserFooter.module.css';
 
 export default function UserFooter() {
   const currentYear = new Date().getFullYear();
+  const { settings } = useSettings();
 
   const footerLinks = {
     company: [
@@ -39,7 +41,7 @@ export default function UserFooter() {
                   <div className={styles.logoIcon}>
                     <i className="bi bi-graph-up-arrow"></i>
                   </div>
-                  <h5 className={styles.logoText}>{PLATFORM_NAME}</h5>
+                  <h5 className={styles.logoText}>{getPlatformName(settings)}</h5>
                 </div>
                 <p className={styles.companyDescription}>
                   {PLATFORM_DESCRIPTION}. Secure, transparent, and designed for long-term growth.
@@ -152,7 +154,7 @@ export default function UserFooter() {
           <div className="row align-items-center g-3">
             <div className="col-lg-6 col-md-12">
               <p className={styles.copyright}>
-                © {currentYear} <strong>{PLATFORM_NAME}</strong>. All rights reserved.
+                © {currentYear} <strong>{getPlatformName(settings)}</strong>. All rights reserved.
               </p>
             </div>
             <div className="col-lg-6 col-md-12">

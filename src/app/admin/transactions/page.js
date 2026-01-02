@@ -2,81 +2,217 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAdminAuth } from '@/context/AdminAuthContext';
+import { adminApi } from '@/utils/adminApi';
+import { withAdminAuth } from '@/middleware/admin';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import styles from './page.module.css';
 
-export default function TransactionHistory() {
+function TransactionHistory() {
   const router = useRouter();
+  const { isAuthenticated } = useAdminAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
-    const adminAuth = localStorage.getItem('adminAuth');
-    if (!adminAuth) {
-      router.push('/admin/login');
+    if (!isAuthenticated) {
       return;
     }
+    fetchTransactions();
+  }, [isAuthenticated, typeFilter, statusFilter, searchTerm]);
 
-    setTimeout(() => {
-      setTransactions([
-        { id: 1, userId: 1, type: 'investment', amount: 1000, date: '2024-12-10', status: 'completed', txHash: '0x123...abc' },
-        { id: 2, userId: 2, type: 'withdrawal', amount: 500, date: '2024-12-11', status: 'pending', txHash: '0x456...def' },
-        { id: 3, userId: 3, type: 'referral', amount: 50, date: '2024-12-12', status: 'completed', txHash: '0x789...ghi' },
-      ]);
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (typeFilter !== 'all') params.append('type', typeFilter);
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (searchTerm) params.append('search', searchTerm);
+      params.append('limit', '100');
+
+      const response = await adminApi.get(`/api/admin/transactions?${params.toString()}`);
+      
+      if (response.success && response.data) {
+        setTransactions(response.data.transactions || []);
+      }
+    } catch (error) {
+      console.error('Fetch transactions error:', error);
+      if (error.status === 401 || error.status === 403) {
+        router.push('/admin/login');
+      }
+    } finally {
       setLoading(false);
-    }, 500);
-  }, [router]);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num || 0);
+  };
+
+  const getTypeBadgeColor = (type) => {
+    switch (type) {
+      case 'investment':
+        return 'primary';
+      case 'withdrawal':
+        return 'warning';
+      case 'referral':
+        return 'info';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case 'completed':
+      case 'approved':
+      case 'processed':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'rejected':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
 
   return (
     <div className={styles.pageContainer}>
-      <div className="mb-4">
-        <h1 className="h3 fw-bold mb-2">Transaction History</h1>
-        <p className="text-muted">Complete transaction history across the platform</p>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 className="h3 fw-bold mb-2">Transaction History</h1>
+          <p className="text-muted">Complete transaction history across the platform</p>
+        </div>
       </div>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">
+          <div className="row g-3 mb-3">
+            <div className="col-md-4">
+              <div className="input-group">
+                <span className="input-group-text">
+                  <i className="bi bi-search"></i>
+                </span>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search by user mobile or name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <select
+                className="form-select"
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+              >
+                <option value="all">All Types</option>
+                <option value="investment">Investment</option>
+                <option value="withdrawal">Withdrawal</option>
+                <option value="referral">Referral</option>
+              </select>
+            </div>
+            <div className="col-md-4">
+              <select
+                className="form-select"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="processed">Processed</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border text-primary" role="status"></div>
+              <p className="mt-3 text-muted">Loading transactions...</p>
+            </div>
+          ) : transactions.length === 0 ? (
+            <div className="text-center py-5">
+              <p className="text-muted">No transactions found</p>
             </div>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>User ID</th>
+                    <th>Date</th>
+                    <th>User</th>
                     <th>Type</th>
                     <th>Amount</th>
-                    <th>Date</th>
-                    <th>Transaction Hash</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Transaction Hash</th>
+                    <th>Details</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((tx) => (
                     <tr key={tx.id}>
-                      <td>{tx.id}</td>
-                      <td>{tx.userId}</td>
+                      <td>{formatDate(tx.date)}</td>
                       <td>
-                        <span className={`badge bg-${tx.type === 'investment' ? 'primary' : tx.type === 'withdrawal' ? 'warning' : 'info'}`}>
+                        <div>
+                          <div className="fw-semibold">{tx.user?.fullName || 'N/A'}</div>
+                          <small className="text-muted">{tx.user?.mobile || 'N/A'}</small>
+                          {tx.referredUser && (
+                            <div className="small text-muted">
+                              Referred: {tx.referredUser.fullName || tx.referredUser.mobile}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`badge bg-${getTypeBadgeColor(tx.type)}`}>
                           {tx.type}
+                          {tx.investmentType && ` (${tx.investmentType})`}
+                          {tx.withdrawalType && ` (${tx.withdrawalType})`}
                         </span>
                       </td>
-                      <td>{tx.amount.toLocaleString()} USDT</td>
-                      <td>{tx.date}</td>
-                      <td><code className="small">{tx.txHash}</code></td>
+                      <td className="fw-semibold">{formatNumber(tx.amount)} USDT</td>
                       <td>
-                        <span className={`badge bg-${tx.status === 'completed' ? 'success' : 'warning'}`}>
+                        <span className={`badge bg-${getStatusBadgeColor(tx.status)}`}>
                           {tx.status}
                         </span>
                       </td>
                       <td>
-                        <button className="btn btn-sm btn-outline-primary">
-                          <i className="bi bi-eye"></i>
-                        </button>
+                        {tx.transactionHash ? (
+                          <code className="small">{tx.transactionHash.substring(0, 20)}...</code>
+                        ) : (
+                          <span className="text-muted">N/A</span>
+                        )}
+                      </td>
+                      <td>
+                        {tx.processedDate && (
+                          <div className="small text-muted">
+                            Processed: {formatDate(tx.processedDate)}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -90,3 +226,4 @@ export default function TransactionHistory() {
   );
 }
 
+export default withAdminAuth(TransactionHistory);

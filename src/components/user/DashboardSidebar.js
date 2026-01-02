@@ -40,16 +40,7 @@ export default function DashboardSidebar() {
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.sidebarContent}>
-          <div className={styles.sidebarHeader}>
-            <h5 className="mb-0">Menu</h5>
-            <button
-              className={`${styles.closeBtn} d-lg-none`}
-              onClick={() => setIsOpen(false)}
-              aria-label="Close sidebar"
-            >
-              <i className="bi bi-x-lg"></i>
-            </button>
-          </div>
+        
 
           <nav className={styles.nav}>
             {menuItems.map((item) => (

@@ -58,6 +58,4 @@ const withdrawalSchema = new mongoose.Schema({
 
 // Index for user withdrawals query
 withdrawalSchema.index({ userId: 1, requestDate: -1 });
-withdrawalSchema.index({ status: 1 });
-
-module.exports = mongoose.model('Withdrawal', withdrawalSchema);
+withdrawalSchema.index({ status: 1 });module.exports = mongoose.model('Withdrawal', withdrawalSchema);

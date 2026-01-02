@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import UserHeader from '@/components/shared/UserHeader';
 import UserFooter from '@/components/shared/UserFooter';
-import { PLATFORM_NAME, PLATFORM_DESCRIPTION } from '@/utils/constants';
+import { useSettings } from '@/context/SettingsContext';
+import { getPlatformName, PLATFORM_DESCRIPTION } from '@/utils/constants';
 import styles from './page.module.css';
 
 export default function Home() {
+  const { settings } = useSettings();
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -114,7 +116,7 @@ export default function Home() {
       <section className={`py-5 ${styles.featuresSection}`}>
         <div className="container">
           <motion.div {...fadeInUp} className="text-center mb-5">
-            <h2 className="display-5 fw-bold mb-3">Why Choose {PLATFORM_NAME}?</h2>
+            <h2 className="display-5 fw-bold mb-3">Why Choose {getPlatformName(settings)}?</h2>
             <p className="lead text-muted">Secure, transparent, and designed for long-term growth</p>
           </motion.div>
 

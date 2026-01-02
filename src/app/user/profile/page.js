@@ -292,6 +292,4 @@ function ProfilePage() {
       </div>
     </div>
   );
-}
-
-export default withAuth(ProfilePage);
+}export default withAuth(ProfilePage);

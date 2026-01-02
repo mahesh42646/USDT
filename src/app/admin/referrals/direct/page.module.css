@@ -1,4 +1,9 @@
 .pageContainer {
-  padding: var(--spacing-lg);
+  padding: 1.5rem;
 }
 
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 1rem;
+  }
+}

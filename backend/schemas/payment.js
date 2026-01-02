@@ -15,7 +15,7 @@ const paymentSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true,
-    min: 10,
+    min: 9.69, // NOWPayments minimum for testing
   },
   currency: {
     type: String,
