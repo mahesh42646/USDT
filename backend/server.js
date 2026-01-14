@@ -14,11 +14,28 @@ const blockchainWatcher = require('./services/blockchainWatcherService');
 const fundSweepService = require('./services/fundSweepService');
 
 const app = express();
-const PORT = process.env.PORT || 3500;
+const PORT = process.env.PORT || 4004;
+
+// CORS Configuration
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3004',
+  'http://localhost:3004',
+  'https://usdt.skylith.cloud',
+];
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
