@@ -29,9 +29,10 @@ exports.register = async (req, res) => {
     const profilePhoto = req.file ? `/uploads/profiles/${req.file.filename}` : (firebasePicture || '');
 
     // Determine the primary identifier based on auth type
-    const userMobile = firebaseMobile || '';
-    const userEmail = email || firebaseEmail || '';
-    const userName = fullName || firebaseName || '';
+    // Use null instead of empty string to allow sparse unique index
+    const userMobile = firebaseMobile && firebaseMobile.trim() ? firebaseMobile.trim() : null;
+    const userEmail = (email || firebaseEmail || '').trim().toLowerCase() || null;
+    const userName = (fullName || firebaseName || '').trim();
 
     // Check if user already exists by firebaseUID
     let user = await User.findOne({ firebaseUID });

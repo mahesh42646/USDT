@@ -9,8 +9,9 @@ const userSchema = new mongoose.Schema({
   },
   mobile: {
     type: String,
-    sparse: true, // Allow null/empty for email users
-    index: true,
+    default: null,
+    // No unique index - firebaseUID is the unique identifier
+    // Mobile is just for display/contact purposes
   },
   fullName: {
     type: String,
@@ -18,9 +19,10 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    sparse: true, // Allow null/empty for mobile users
+    default: null,
     lowercase: true,
-    index: true,
+    // No unique index - firebaseUID is the unique identifier
+    // We check for existing email in controller to link accounts
   },
   authType: {
     type: String,
