@@ -8,6 +8,7 @@ const adminSettingsController = require('../controllers/adminSettingsController'
 const adminReferralController = require('../controllers/adminReferralController');
 const adminInvestmentController = require('../controllers/adminInvestmentController');
 const adminReferralManagementController = require('../controllers/adminReferralManagementController');
+const adminFundSweepController = require('../controllers/adminFundSweepController');
 const { verifyAdminToken } = require('../middleware/admin');
 
 // Public routes
@@ -51,5 +52,10 @@ router.get('/referrals/user/:userId/chain', verifyAdminToken, adminReferralContr
 // Settings routes
 router.get('/settings', verifyAdminToken, adminSettingsController.getSettings);
 router.put('/settings', verifyAdminToken, adminSettingsController.updateSettings);
+
+// Fund sweep management routes
+router.get('/fund-sweep/unswept', verifyAdminToken, adminFundSweepController.getUnsweptBalances);
+router.post('/fund-sweep/trigger', verifyAdminToken, adminFundSweepController.triggerSweep);
+router.get('/fund-sweep/status', verifyAdminToken, adminFundSweepController.getSweepStatus);
 
 module.exports = router;

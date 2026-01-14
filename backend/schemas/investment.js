@@ -10,7 +10,15 @@ const investmentSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true,
-    min: 9.69, // NOWPayments minimum for testing
+    min: 1, // Minimum $1 USD investment
+  },
+  paymentCurrency: {
+    type: String,
+    default: null, // Currency user actually paid with (TRX, USDT, etc.)
+  },
+  paymentAmount: {
+    type: Number,
+    default: null, // Actual payment amount in payment currency
   },
   transactionHash: {
     type: String,

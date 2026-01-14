@@ -98,6 +98,120 @@
   margin: 0 auto;
 }
 
+/* Auth Method Tabs */
+.authTabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+  background: var(--background-secondary);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-lg);
+}
+
+.authTab {
+  flex: 1;
+  padding: var(--spacing-md);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.authTab:hover {
+  color: var(--foreground);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.authTab.active {
+  background: var(--white);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: var(--spacing-xl) 0;
+  color: var(--foreground-secondary);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.divider span {
+  padding: 0 var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Google Button */
+.googleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  color: var(--foreground);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.googleBtn:hover {
+  background: var(--background-secondary);
+  border-color: var(--foreground-secondary);
+}
+
+.googleBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Forgot Password Link */
+.forgotLink {
+  color: var(--accent);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.forgotLink:hover {
+  color: var(--accent-light);
+}
+
+/* Register Link */
+.registerLink {
+  color: var(--accent);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.registerLink:hover {
+  color: var(--accent-light);
+}
+
 @media (max-width: 575.98px) {
   .authCard {
     padding: var(--spacing-xl);
@@ -106,5 +220,10 @@
   .recaptchaContainer {
     transform: scale(0.85);
     transform-origin: center;
+  }
+
+  .authTab {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm);
   }
 }

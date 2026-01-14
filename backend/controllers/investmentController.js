@@ -10,10 +10,10 @@ exports.addInvestment = async (req, res) => {
     const { amount, transactionHash } = req.body;
 
     // Validate input
-    if (!amount || amount < 10) {
+    if (!amount || amount < 1) {
       return res.status(400).json({
         success: false,
-        message: 'Minimum investment is 10 USDT',
+        message: 'Minimum investment is 1 USD',
       });
     }
 

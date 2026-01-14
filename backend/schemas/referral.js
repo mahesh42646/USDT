@@ -47,9 +47,7 @@ const referralSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
-
-// Update timestamp on save
+});// Update timestamp on save
 referralSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

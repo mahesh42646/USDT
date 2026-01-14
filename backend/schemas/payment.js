@@ -15,18 +15,28 @@ const paymentSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true,
-    min: 9.69, // NOWPayments minimum for testing
+    min: 0.01, // Payment amount in selected currency
+  },
+  usdAmount: {
+    type: Number,
+    required: false, // Original USD amount for investment
+    min: 1, // Minimum $1 USD investment
   },
   currency: {
     type: String,
-    default: 'USDT',
+    default: 'TRX', // Payment currency (TRX, USDT, etc.)
+  },
+  conversionRate: {
+    type: Number,
+    default: null, // Exchange rate used for conversion
   },
   paymentMethod: {
     type: String,
     enum: ['gateway', 'trc20'],
     required: true,
+    default: 'trc20',
   },
-  // Gateway payment details
+  // Gateway payment details (legacy - for backward compatibility)
   gatewayProvider: {
     type: String,
     enum: ['coingate', 'nowpayments', 'other'],
@@ -48,6 +58,11 @@ const paymentSchema = new mongoose.Schema({
   transactionHash: {
     type: String,
     default: null,
+  },
+  senderAddress: {
+    type: String,
+    default: null, // Wallet address of who actually paid
+    index: true,
   },
   // Payment status
   status: {

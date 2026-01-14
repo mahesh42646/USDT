@@ -8,6 +8,10 @@ require('dotenv').config();
 const dailyInterestCron = require('./cron/dailyInterestCron');
 // Initialize TRC20 verification cron job
 const trc20VerificationCron = require('./cron/trc20VerificationCron');
+// Initialize blockchain watcher for HD wallet payments
+const blockchainWatcher = require('./services/blockchainWatcherService');
+// Initialize fund sweep service to move funds from derived addresses to admin wallet
+const fundSweepService = require('./services/fundSweepService');
 
 const app = express();
 const PORT = process.env.PORT || 3500;
@@ -94,5 +98,24 @@ app.listen(PORT, () => {
     console.log('TRC20 automatic verification cron job started (runs every 2 minutes)');
   } else {
     console.log('TRC20 auto-verification is disabled. Set AUTO_VERIFY_TRC20=true to enable.');
+  }
+  
+  // Start blockchain watcher for HD wallet payments
+  try {
+    blockchainWatcher.start();
+    console.log('✅ Blockchain watcher started (HD wallet system)');
+  } catch (error) {
+    console.error('❌ Failed to start blockchain watcher:', error.message);
+    console.error('   Make sure HD_WALLET_ENCRYPTED_SEED is set in .env');
+    console.error('   Run: node scripts/generateHDSeed.js to generate seed');
+  }
+  
+  // Start fund sweep service to move funds from derived addresses to admin wallet
+  try {
+    fundSweepService.start();
+    console.log('✅ Fund sweep service started (moves funds to admin wallet)');
+  } catch (error) {
+    console.error('❌ Failed to start fund sweep service:', error.message);
+    console.error('   Make sure ADMIN_WALLET_ADDRESS is set in .env');
   }
 });

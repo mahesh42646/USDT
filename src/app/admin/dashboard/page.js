@@ -92,7 +92,7 @@ function AdminDashboard() {
       title: 'Total Users',
       value: stats.totalUsers,
       icon: 'bi-people-fill',
-      color: 'primary',
+      color: 'success',
       suffix: '',
       link: '/admin/users',
     },
@@ -132,7 +132,7 @@ function AdminDashboard() {
       title: 'Total Referrals',
       value: stats.totalReferralsCount,
       icon: 'bi-diagram-3-fill',
-      color: 'primary',
+      color: 'success',
       suffix: '',
       link: '/admin/referrals/direct',
     }
@@ -321,9 +321,7 @@ function AdminDashboard() {
               <p className="text-muted mb-0">Welcome back! Here's what's happening with your platform today.</p>
             </div>
             <div className={styles.headerActions}>
-              <button className="btn btn-outline-primary">
-                <i className="bi bi-download me-2"></i>Export Report
-              </button>
+             
             </div>
           </div>
         </div>

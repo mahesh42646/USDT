@@ -7,10 +7,10 @@ exports.createInvestment = async (req, res) => {
     const { userId } = req.params;
     const { amount, transactionHash, type = 'new', lockInDays = 90 } = req.body;
 
-    if (!amount || amount < 10) {
+    if (!amount || amount < 1) {
       return res.status(400).json({
         success: false,
-        message: 'Minimum investment is 10 USDT',
+        message: 'Minimum investment is 1 USD',
       });
     }
 

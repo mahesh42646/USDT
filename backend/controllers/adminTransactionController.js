@@ -31,7 +31,7 @@ exports.getAllTransactions = async (req, res) => {
       const investments = await Investment.find(investmentQuery)
         .populate('userId', 'mobile fullName email')
         .sort({ createdAt: -1 })
-        .select('amount type status createdAt transactionHash userId');
+        .select('amount type status createdAt transactionHash userId paymentCurrency paymentAmount');
 
       transactions.push(...investments.map(inv => ({
         id: inv._id,
@@ -42,7 +42,9 @@ exports.getAllTransactions = async (req, res) => {
           fullName: inv.userId.fullName,
           email: inv.userId.email,
         } : null,
-        amount: inv.amount,
+        amount: inv.amount, // USD amount
+        paymentCurrency: inv.paymentCurrency || 'USD', // Currency user paid with
+        paymentAmount: inv.paymentAmount || inv.amount, // Actual payment amount
         status: inv.status,
         transactionHash: inv.transactionHash,
         date: inv.createdAt,

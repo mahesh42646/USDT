@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
-import { auth, clearRecaptcha } from '@/config/firebase';
+import Link from 'next/link';
+import { 
+  signInWithPhoneNumber, 
+  RecaptchaVerifier,
+  signInWithEmailAndPassword,
+  signInWithPopup
+} from 'firebase/auth';
+import { auth, clearRecaptcha, googleProvider } from '@/config/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/utils/api';
 import styles from './page.module.css';
@@ -32,15 +38,27 @@ const countryCodes = [
 ];
 
 export default function LoginPage() {
+  // Auth method tab state
+  const [authMethod, setAuthMethod] = useState('mobile'); // 'mobile', 'email', 'google'
+  
+  // Mobile OTP states
   const [countryCode, setCountryCode] = useState('+91');
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState('mobile'); // 'mobile' or 'otp'
   const [confirmationResult, setConfirmationResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [otpExpiry, setOtpExpiry] = useState(0);
+  
+  // Email/Password states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // Common states
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, setAction, isAuthenticated, userData, loading: authLoading } = useAuth();
@@ -48,7 +66,6 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && isAuthenticated && userData) {
-      // User is already logged in, redirect to dashboard
       const action = searchParams.get('action');
       if (action) {
         router.push(action);
@@ -59,20 +76,16 @@ export default function LoginPage() {
   }, [isAuthenticated, userData, authLoading, router, searchParams]);
 
   useEffect(() => {
-    // Check if there's a pending action
     const action = searchParams.get('action');
     if (action) {
       setAction(action);
     }
 
-    // Check for referral code in URL
     const referralCode = searchParams.get('ref');
     if (referralCode) {
-      // Store referral code in localStorage for later use during registration
       localStorage.setItem('pending_referral_code', referralCode);
     }
 
-    // Cleanup on unmount
     return () => {
       clearRecaptcha();
     };
@@ -100,7 +113,7 @@ export default function LoginPage() {
     }
   }, [otpExpiry, step]);
 
-  // Don't render login form if already authenticated (AFTER all hooks)
+  // Loading state
   if (authLoading) {
     return (
       <div className={styles.authContainer}>
@@ -114,9 +127,43 @@ export default function LoginPage() {
   }
 
   if (isAuthenticated && userData) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
+  // Clear error when switching auth methods
+  const handleAuthMethodChange = (method) => {
+    setAuthMethod(method);
+    setError('');
+    setStep('mobile');
+    setOtp('');
+  };
+
+  // Handle backend user check/creation
+  const handleBackendAuth = async (firebaseUser, authType) => {
+    try {
+      const token = await firebaseUser.getIdToken();
+      localStorage.setItem('firebase_token', token);
+      
+      // Check if user exists in backend
+      try {
+        const response = await api.get('/api/user/profile');
+        const userData = response.user || response;
+        localStorage.removeItem('firebase_token');
+        login(userData);
+      } catch (error) {
+        // User doesn't exist, redirect to complete profile
+        console.log('User not found in backend, redirecting to register page');
+        // Store auth type for register page
+        localStorage.setItem('auth_type', authType);
+        router.push('/auth/register');
+      }
+    } catch (error) {
+      console.error('Backend auth error:', error);
+      throw error;
+    }
+  };
+
+  // ==================== MOBILE OTP HANDLERS ====================
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
@@ -131,23 +178,16 @@ export default function LoginPage() {
     try {
       const phoneNumber = `${countryCode}${mobile.replace(/\D/g, '')}`;
       
-      // Always create a fresh reCAPTCHA verifier right before sending
-      // Clear any existing one first
       clearRecaptcha();
-      
-      // Wait a moment for cleanup
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Ensure container exists and prepare it - make it visible for initialization
       let container = document.getElementById('recaptcha-container');
       if (!container) {
-        // Create container if it doesn't exist
         container = document.createElement('div');
         container.id = 'recaptcha-container';
         document.body.appendChild(container);
       }
       
-      // Clear container and set it up for invisible reCAPTCHA (hidden but accessible)
       container.innerHTML = '';
       container.style.display = 'block';
       container.style.visibility = 'visible';
@@ -161,138 +201,85 @@ export default function LoginPage() {
       container.style.zIndex = '-1';
       container.style.overflow = 'hidden';
       
-      // Wait for DOM to update
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Verify auth is ready
       if (!auth) {
         throw new Error('Firebase authentication not initialized. Please refresh the page.');
       }
       
-      // Create new verifier with INVISIBLE reCAPTCHA (more reliable for phone auth)
-      // Invisible reCAPTCHA verifies automatically without user interaction
       let recaptchaVerifier;
-      let recaptchaVerified = false;
       
       try {
         recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'invisible', // Use invisible for automatic verification
-          callback: (response) => {
-            console.log('reCAPTCHA verified automatically', response);
-            recaptchaVerified = true;
-            // Hide container after verification
-            if (container) {
-              container.style.display = 'none';
-            }
+          size: 'invisible',
+          callback: () => {
+            if (container) container.style.display = 'none';
           },
           'expired-callback': () => {
-            console.log('reCAPTCHA expired');
-            recaptchaVerified = false;
-            // Show container again if expired
-            if (container) {
-              container.style.display = 'block';
-            }
+            if (container) container.style.display = 'block';
           },
           'error-callback': (error) => {
             console.error('reCAPTCHA error callback:', error);
-            recaptchaVerified = false;
           }
         });
       } catch (initError) {
         console.error('reCAPTCHA verifier creation error:', initError);
-        // Hide container on error
-        if (container) {
-          container.style.display = 'none';
-        }
+        if (container) container.style.display = 'none';
         throw new Error('Failed to initialize reCAPTCHA. Please refresh the page and try again.');
       }
       
-      // Render reCAPTCHA and wait for it to be ready
       let widgetId;
       try {
         widgetId = await recaptchaVerifier.render();
-        console.log('reCAPTCHA rendered successfully with widget ID:', widgetId);
-        
-        // Wait for reCAPTCHA to be fully ready
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Additional validation - check if widget ID is valid (0 is a valid ID)
         if (widgetId === null || widgetId === undefined) {
           widgetId = recaptchaVerifier._widgetId;
         }
         
-        // Widget ID 0 is valid, so only check for null/undefined
         if (widgetId === null || widgetId === undefined) {
-          // Hide container
-          if (container) {
-            container.style.display = 'none';
-          }
+          if (container) container.style.display = 'none';
           throw new Error('reCAPTCHA widget ID not available');
         }
-        
-        console.log('reCAPTCHA ready with widget ID:', widgetId);
       } catch (renderError) {
         console.error('reCAPTCHA render error:', renderError);
-        console.error('Error details:', {
-          message: renderError.message,
-          code: renderError.code,
-          stack: renderError.stack
-        });
-        // Hide container on error
-        if (container) {
-          container.style.display = 'none';
-        }
+        if (container) container.style.display = 'none';
         throw new Error('Failed to render reCAPTCHA. Please refresh the page and try again.');
       }
       
-      console.log('Sending OTP to:', phoneNumber);
-      console.log('Using verifier with widget ID:', widgetId);
-      
-      // Call signInWithPhoneNumber - invisible reCAPTCHA will verify automatically
       const confirmation = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
       
-      console.log('OTP sent successfully');
       setConfirmationResult(confirmation);
       setStep('otp');
-      setResendCooldown(10); // 10 seconds cooldown
-      setOtpExpiry(300); // 5 minutes expiry
+      setResendCooldown(10);
+      setOtpExpiry(300);
       
-      // Hide and clear reCAPTCHA after successful send
       const successContainer = document.getElementById('recaptcha-container');
-      if (successContainer) {
-        successContainer.style.display = 'none';
-      }
+      if (successContainer) successContainer.style.display = 'none';
       try {
         recaptchaVerifier.clear();
-      } catch (e) {
-        // Ignore clear errors
-      }
+      } catch (e) {}
     } catch (error) {
       console.error('OTP send error:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
       
       let errorMessage = 'Failed to send OTP. Please try again.';
       
       if (error.code === 'auth/invalid-app-credential') {
-        errorMessage = 'reCAPTCHA verification failed. Please check:\n\n1. Firebase Console → Authentication → Settings → Authorized domains\n   - Add "localhost" if missing\n\n2. Firebase Console → Authentication → Sign-in method\n   - Ensure Phone provider is ENABLED\n\n3. Verify Firebase project configuration matches your .env file\n\n4. Check FIREBASE_SETUP_GUIDE.md for detailed instructions';
+        errorMessage = 'reCAPTCHA verification failed. Please refresh and try again.';
       } else if (error.code === 'auth/invalid-phone-number') {
         errorMessage = 'Invalid phone number format. Please check and try again.';
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = 'Too many requests. Please try again later.';
       } else if (error.code === 'auth/quota-exceeded') {
-        errorMessage = 'SMS quota exceeded. Please try again later or contact support.';
+        errorMessage = 'SMS quota exceeded. Please try again later.';
       } else if (error.message) {
         errorMessage = error.message;
       }
       
       setError(errorMessage);
       
-      // Hide container and clear any verifier on error
       const errorContainer = document.getElementById('recaptcha-container');
-      if (errorContainer) {
-        errorContainer.style.display = 'none';
-      }
+      if (errorContainer) errorContainer.style.display = 'none';
       clearRecaptcha();
     } finally {
       setLoading(false);
@@ -312,33 +299,8 @@ export default function LoginPage() {
 
     try {
       const result = await confirmationResult.confirm(otp);
-      const firebaseUser = result.user;
-      const token = await firebaseUser.getIdToken();
-
-      // Clear reCAPTCHA after successful verification
       clearRecaptcha();
-
-      // Store token temporarily
-      localStorage.setItem('firebase_token', token);
-      
-      // Check if user exists in backend
-      try {
-        const response = await api.get('/api/user/profile');
-        // Backend returns { success: true, user: {...} }
-        const userData = response.user || response;
-        
-        // User exists, login successful
-        localStorage.removeItem('firebase_token');
-        login(userData);
-        
-        // Auth state is now managed by AuthContext, no need to redirect here
-        // The AuthContext will handle the redirect
-      } catch (error) {
-        // User doesn't exist (404 or other error), redirect to complete profile
-        // Token is already in localStorage, will be used in register page
-        console.log('User not found in backend, redirecting to register page');
-        router.push('/auth/register');
-      }
+      await handleBackendAuth(result.user, 'mobile');
     } catch (error) {
       console.error('OTP verification error:', error);
       if (error.code === 'auth/invalid-verification-code') {
@@ -354,9 +316,7 @@ export default function LoginPage() {
   };
 
   const handleResendOTP = async () => {
-    if (resendCooldown > 0) {
-      return;
-    }
+    if (resendCooldown > 0) return;
 
     setError('');
     setLoading(true);
@@ -364,11 +324,9 @@ export default function LoginPage() {
     try {
       const phoneNumber = `${countryCode}${mobile.replace(/\D/g, '')}`;
       
-      // Clear any existing verifier
       clearRecaptcha();
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Ensure container exists
       let container = document.getElementById('recaptcha-container');
       if (!container) {
         container = document.createElement('div');
@@ -376,7 +334,6 @@ export default function LoginPage() {
         document.body.appendChild(container);
       }
       
-      // Prepare container
       container.innerHTML = '';
       container.style.display = 'block';
       container.style.visibility = 'visible';
@@ -391,24 +348,15 @@ export default function LoginPage() {
       
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Create fresh verifier with invisible reCAPTCHA
       const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
-        callback: (response) => {
-          console.log('reCAPTCHA verified', response);
-        },
-        'expired-callback': () => {
-          console.log('reCAPTCHA expired');
-        },
-        'error-callback': (error) => {
-          console.error('reCAPTCHA error:', error);
-        }
+        callback: () => {},
+        'expired-callback': () => {},
+        'error-callback': () => {}
       });
       
-      // Render and wait
-      let widgetId;
       try {
-        widgetId = await recaptchaVerifier.render();
+        await recaptchaVerifier.render();
       } catch (renderError) {
         console.error('reCAPTCHA render error:', renderError);
         throw new Error('Failed to initialize reCAPTCHA. Please try again.');
@@ -418,19 +366,83 @@ export default function LoginPage() {
       const confirmation = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
       
       setConfirmationResult(confirmation);
-      setResendCooldown(10); // 10 seconds cooldown
-      setOtpExpiry(300); // Reset to 5 minutes
+      setResendCooldown(10);
+      setOtpExpiry(300);
       
-      // Clear verifier
       try {
         recaptchaVerifier.clear();
-      } catch (e) {
-        // Ignore
-      }
+      } catch (e) {}
     } catch (error) {
       console.error('Resend OTP error:', error);
       setError(error.message || 'Failed to resend OTP. Please try again.');
       clearRecaptcha();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==================== EMAIL/PASSWORD HANDLERS ====================
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      await handleBackendAuth(result.user, 'email');
+    } catch (error) {
+      console.error('Email login error:', error);
+      
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email. Please register first.';
+      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        errorMessage = 'Incorrect password. Please try again.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = 'This account has been disabled.';
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==================== GOOGLE AUTH HANDLER ====================
+  const handleGoogleLogin = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      await handleBackendAuth(result.user, 'google');
+    } catch (error) {
+      console.error('Google login error:', error);
+      
+      let errorMessage = 'Google sign-in failed. Please try again.';
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Sign-in popup was closed. Please try again.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Popup was blocked. Please allow popups for this site.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMessage = '';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMessage = 'An account already exists with this email using a different sign-in method.';
+      }
+      
+      if (errorMessage) setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -441,7 +453,7 @@ export default function LoginPage() {
       <div className={styles.authCard}>
         <div className="text-center mb-4">
           <h2 className="fw-bold mb-2">Welcome Back</h2>
-          <p className="text-muted">Login with your mobile number</p>
+          <p className="text-muted">Choose your preferred login method</p>
         </div>
 
         {error && (
@@ -450,36 +462,224 @@ export default function LoginPage() {
           </div>
         )}
 
-        {step === 'mobile' ? (
-          <form onSubmit={handleSendOTP}>
+        {/* Auth Method Tabs */}
+        <div className={styles.authTabs}>
+          <button
+            type="button"
+            className={`${styles.authTab} ${authMethod === 'mobile' ? styles.active : ''}`}
+            onClick={() => handleAuthMethodChange('mobile')}
+          >
+            <i className="bi bi-phone me-2"></i>
+            Mobile
+          </button>
+          <button
+            type="button"
+            className={`${styles.authTab} ${authMethod === 'email' ? styles.active : ''}`}
+            onClick={() => handleAuthMethodChange('email')}
+          >
+            <i className="bi bi-envelope me-2"></i>
+            Email
+          </button>
+        </div>
+
+        {/* Mobile OTP Form */}
+        {authMethod === 'mobile' && (
+          <>
+            {step === 'mobile' ? (
+              <form onSubmit={handleSendOTP}>
+                <div className="mb-3">
+                  <label htmlFor="mobile" className="form-label">
+                    Mobile Number
+                  </label>
+                  <div className="input-group">
+                    <select
+                      className="form-select"
+                      style={{ maxWidth: '140px' }}
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                    >
+                      {countryCodes.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.flag} {country.code}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      className="form-control"
+                      id="mobile"
+                      placeholder="Enter mobile number"
+                      value={mobile}
+                      onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                      required
+                    />
+                  </div>
+                  <small className="text-muted">Enter your mobile number without country code</small>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      Sending OTP...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-send me-2"></i>
+                      Send OTP
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP}>
+                <div className="mb-3">
+                  <label htmlFor="otp" className="form-label">
+                    Enter OTP
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="bi bi-shield-check"></i>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control text-center"
+                      id="otp"
+                      placeholder="000000"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      maxLength={6}
+                      required
+                    />
+                  </div>
+                  <small className="text-muted">Enter the 6-digit code sent to {countryCode} {mobile}</small>
+                  {otpExpiry > 0 && (
+                    <div className="mt-2">
+                      <small className="text-muted">
+                        <i className="bi bi-clock me-1"></i>
+                        OTP expires in {Math.floor(otpExpiry / 60)}:{(otpExpiry % 60).toString().padStart(2, '0')}
+                      </small>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100 mb-2"
+                  disabled={loading || otpExpiry === 0}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      Verifying...
+                    </>
+                  ) : otpExpiry === 0 ? (
+                    <>
+                      <i className="bi bi-exclamation-triangle me-2"></i>
+                      OTP Expired
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-check-circle me-2"></i>
+                      Verify OTP
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-link w-100"
+                  onClick={handleResendOTP}
+                  disabled={loading || resendCooldown > 0}
+                >
+                  {resendCooldown > 0 ? (
+                    <>
+                      <i className="bi bi-clock me-2"></i>
+                      Resend in {resendCooldown}s
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-arrow-clockwise me-2"></i>
+                      Resend OTP
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-link w-100"
+                  onClick={() => {
+                    setStep('mobile');
+                    setOtp('');
+                    setError('');
+                  }}
+                >
+                  <i className="bi bi-arrow-left me-2"></i>
+                  Change Mobile Number
+                </button>
+              </form>
+            )}
+          </>
+        )}
+
+        {/* Email/Password Form */}
+        {authMethod === 'email' && (
+          <form onSubmit={handleEmailLogin}>
             <div className="mb-3">
-              <label htmlFor="mobile" className="form-label">
-                Mobile Number
+              <label htmlFor="email" className="form-label">
+                Email Address
               </label>
               <div className="input-group">
-                <select
-                  className="form-select"
-                  style={{ maxWidth: '140px' }}
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                >
-                  {countryCodes.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.flag} {country.code}
-                    </option>
-                  ))}
-                </select>
+                <span className="input-group-text">
+                  <i className="bi bi-envelope"></i>
+                </span>
                 <input
-                  type="tel"
+                  type="email"
                   className="form-control"
-                  id="mobile"
-                  placeholder="Enter mobile number"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                  id="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-              <small className="text-muted">Enter your mobile number without country code</small>
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              <div className="input-group">
+                <span className="input-group-text">
+                  <i className="bi bi-lock"></i>
+                </span>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-control"
+                  id="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                </button>
+              </div>
+            </div>
+
+            <div className="d-flex justify-content-end mb-3">
+              <Link href="/auth/forgot-password" className={styles.forgotLink}>
+                Forgot Password?
+              </Link>
             </div>
 
             <button
@@ -490,106 +690,47 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Sending OTP...
+                  Signing in...
                 </>
               ) : (
                 <>
-                  <i className="bi bi-send me-2"></i>
-                  Send OTP
+                  <i className="bi bi-box-arrow-in-right me-2"></i>
+                  Sign In
                 </>
               )}
             </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOTP}>
-            <div className="mb-3">
-              <label htmlFor="otp" className="form-label">
-                Enter OTP
-              </label>
-              <div className="input-group">
-                <span className="input-group-text">
-                  <i className="bi bi-shield-check"></i>
-                </span>
-                <input
-                  type="text"
-                  className="form-control text-center"
-                  id="otp"
-                  placeholder="000000"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  maxLength={6}
-                  required
-                />
-              </div>
-              <small className="text-muted">Enter the 6-digit code sent to {countryCode} {mobile}</small>
-              {otpExpiry > 0 && (
-                <div className="mt-2">
-                  <small className="text-muted">
-                    <i className="bi bi-clock me-1"></i>
-                    OTP expires in {Math.floor(otpExpiry / 60)}:{(otpExpiry % 60).toString().padStart(2, '0')}
-                  </small>
-                </div>
-              )}
+
+            <div className="text-center mt-3">
+              <span className="text-muted">Don't have an account? </span>
+              <Link href="/auth/register-email" className={styles.registerLink}>
+                Register
+              </Link>
             </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary w-100 mb-2"
-              disabled={loading || otpExpiry === 0}
-            >
-              {loading ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Verifying...
-                </>
-              ) : otpExpiry === 0 ? (
-                <>
-                  <i className="bi bi-exclamation-triangle me-2"></i>
-                  OTP Expired
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-check-circle me-2"></i>
-                  Verify OTP
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              className="btn btn-link w-100"
-              onClick={handleResendOTP}
-              disabled={loading || resendCooldown > 0}
-            >
-              {resendCooldown > 0 ? (
-                <>
-                  <i className="bi bi-clock me-2"></i>
-                  Resend in {resendCooldown}s
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-arrow-clockwise me-2"></i>
-                  Resend OTP
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              className="btn btn-link w-100"
-              onClick={() => {
-                setStep('mobile');
-                setOtp('');
-                setError('');
-              }}
-            >
-              <i className="bi bi-arrow-left me-2"></i>
-              Change Mobile Number
-            </button>
           </form>
         )}
 
-        {/* reCAPTCHA container - will be shown during OTP send */}
+        {/* Divider */}
+        <div className={styles.divider}>
+          <span>OR</span>
+        </div>
+
+        {/* Google Sign In Button */}
+        <button
+          type="button"
+          className={styles.googleBtn}
+          onClick={handleGoogleLogin}
+          disabled={loading}
+        >
+          <svg className={styles.googleIcon} viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        {/* reCAPTCHA container */}
         <div id="recaptcha-container" style={{ display: 'none' }}></div>
       </div>
     </div>

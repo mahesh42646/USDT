@@ -170,7 +170,7 @@ function DirectReferralList() {
                       <th>Income</th>
                       <th>Date</th>
                       <th>Chain</th>
-                      <th>Actions</th>
+                     
                     </tr>
                   </thead>
                   <tbody>
@@ -228,7 +228,7 @@ function DirectReferralList() {
                               <span className="text-muted">No chain</span>
                             )}
                           </td>
-                          <td>
+                          {/* <td>
                             <button
                               className="btn btn-sm btn-outline-primary"
                               onClick={() => router.push(`/admin/users/${ref.referred?.id}`)}
@@ -236,7 +236,7 @@ function DirectReferralList() {
                             >
                               <i className="bi bi-eye"></i>
                             </button>
-                          </td>
+                          </td> */}
                         </tr>
                         {expandedReferral === ref.id && ref.chain && ref.chain.length > 0 && (
                           <tr>

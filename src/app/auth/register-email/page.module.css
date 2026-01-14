@@ -1,0 +1,98 @@
+.authContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background) 100%);
+  padding: var(--spacing-lg);
+}
+
+.authCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-2xl);
+  width: 100%;
+  max-width: 450px;
+}
+
+.authCard h2 {
+  color: var(--foreground);
+  font-size: var(--font-size-3xl);
+}
+
+.authCard .form-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground);
+  margin-bottom: var(--spacing-sm);
+}
+
+.authCard .form-control {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  transition: border-color var(--transition-base);
+}
+
+.authCard .form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(107, 70, 193, 0.25);
+}
+
+.authCard .input-group-text {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-right: none;
+  color: var(--foreground-secondary);
+}
+
+.authCard .btn-primary {
+  padding: var(--spacing-md);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+}
+
+.authCard .alert {
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Password Strength */
+.passwordStrength {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.strengthBar {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strengthFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Login Link */
+.loginLink {
+  color: var(--accent);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.loginLink:hover {
+  color: var(--accent-light);
+}
+
+@media (max-width: 575.98px) {
+  .authCard {
+    padding: var(--spacing-xl);
+  }
+}

@@ -212,6 +212,15 @@ exports.rejectWithdrawal = async (req, res) => {
     withdrawal.processedDate = new Date();
     await withdrawal.save();
 
+    // If investment withdrawal was rejected, return the amount back to user's balance
+    if (withdrawal.withdrawalType === 'investment') {
+      const user = await User.findById(withdrawal.userId);
+      if (user) {
+        user.currentInvestmentBalance = (user.currentInvestmentBalance || 0) + withdrawal.amount;
+        await user.save();
+      }
+    }
+
     res.json({
       success: true,
       message: 'Withdrawal rejected successfully',
@@ -266,12 +275,13 @@ exports.processWithdrawal = async (req, res) => {
     withdrawal.processedDate = new Date();
     await withdrawal.save();
 
-    // Deduct from user balance
+    // Deduct from user balance (only for interest, investment already deducted on request)
     if (withdrawal.userId) {
       if (withdrawal.withdrawalType === 'interest') {
         withdrawal.userId.interestBalance = Math.max(0, (withdrawal.userId.interestBalance || 0) - withdrawal.amount);
+        await withdrawal.userId.save();
       }
-      await withdrawal.userId.save();
+      // Investment amount already deducted when request was created, no need to deduct again
     }
 
     res.json({
@@ -349,16 +359,24 @@ exports.updateWithdrawalStatus = async (req, res) => {
 
     await withdrawal.save();
 
-    // Update user balances if status changed to processed
+    // Update user balances if status changed to processed (only for interest, investment already deducted)
     if (status === 'processed' && oldStatus !== 'processed') {
       const user = await User.findById(withdrawal.userId);
       if (user) {
         if (withdrawal.withdrawalType === 'interest') {
           user.interestBalance = Math.max(0, (user.interestBalance || 0) - withdrawal.amount);
-        } else if (withdrawal.withdrawalType === 'investment') {
-          user.currentInvestmentBalance = Math.max(0, (user.currentInvestmentBalance || 0) - withdrawal.amount);
         }
+        // Investment amount already deducted when request was created, no need to deduct again
         user.lastWithdrawalDate = new Date();
+        await user.save();
+      }
+    }
+
+    // If status changed to rejected and it's an investment withdrawal, return the amount
+    if (status === 'rejected' && oldStatus !== 'rejected' && withdrawal.withdrawalType === 'investment') {
+      const user = await User.findById(withdrawal.userId);
+      if (user) {
+        user.currentInvestmentBalance = (user.currentInvestmentBalance || 0) + withdrawal.amount;
         await user.save();
       }
     }

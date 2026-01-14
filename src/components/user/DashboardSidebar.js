@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import styles from './DashboardSidebar.module.css';
 
 export default function DashboardSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   const menuItems = [
     { name: 'Dashboard', path: '/user/dashboard', icon: 'bi-speedometer2' },
@@ -55,6 +57,17 @@ export default function DashboardSidebar() {
               </Link>
             ))}
           </nav>
+
+          {/* Logout Button */}
+          <div className={styles.logoutSection}>
+            <button
+              className={styles.logoutBtn}
+              onClick={logout}
+            >
+              <i className="bi bi-box-arrow-right"></i>
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
       </aside>
     </>

@@ -80,6 +80,15 @@ export function AuthProvider({ children }) {
     setPendingAction(path);
   };
 
+  // Get user's display identifier (email or mobile based on auth type)
+  const getUserIdentifier = () => {
+    if (!userData) return '';
+    if (userData.authType === 'email' || userData.authType === 'google') {
+      return userData.email || userData.mobile || '';
+    }
+    return userData.mobile || userData.email || '';
+  };
+
   const value = {
     user,
     userData,
@@ -88,6 +97,7 @@ export function AuthProvider({ children }) {
     logout,
     setAction,
     isAuthenticated: !!user,
+    getUserIdentifier,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

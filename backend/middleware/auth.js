@@ -91,6 +91,13 @@ exports.verifyFirebaseToken = async (req, res, next) => {
             decodedToken = {
               uid: user.localId,
               phone_number: user.phoneNumber || '',
+              email: user.email || '',
+              name: user.displayName || '',
+              picture: user.photoUrl || '',
+              // Determine auth type
+              firebase: {
+                sign_in_provider: user.providerUserInfo?.[0]?.providerId || 'password',
+              },
             };
           } else {
             throw new Error('User not found in token');
@@ -104,9 +111,24 @@ exports.verifyFirebaseToken = async (req, res, next) => {
         }
       }
       
+      // Determine auth type from provider
+      let authType = 'mobile';
+      const signInProvider = decodedToken.firebase?.sign_in_provider || '';
+      if (signInProvider === 'google.com') {
+        authType = 'google';
+      } else if (signInProvider === 'password') {
+        authType = 'email';
+      } else if (signInProvider === 'phone') {
+        authType = 'mobile';
+      }
+      
       req.user = {
         firebaseUID: decodedToken.uid,
         mobile: decodedToken.phone_number || decodedToken.phoneNumber || '',
+        email: decodedToken.email || '',
+        name: decodedToken.name || '',
+        picture: decodedToken.picture || '',
+        authType,
       };
       next();
     } catch (error) {

@@ -6,9 +6,24 @@ const Referral = require('../schemas/referral');
 class TRC20VerificationService {
   constructor() {
     this.apiKey = process.env.TRONGRID_API_KEY;
-    this.apiUrl = process.env.TRONGRID_API_URL || 'https://api.trongrid.io';
+    // Use Shasta Testnet for testing, Mainnet for production
+    this.useTestnet = process.env.TRON_NETWORK === 'testnet' || process.env.TRON_NETWORK === 'shasta';
+    this.apiUrl = this.useTestnet
+      ? (process.env.TRONGRID_API_URL || 'https://api.shasta.trongrid.io')
+      : (process.env.TRONGRID_API_URL || 'https://api.trongrid.io');
     this.adminWallet = process.env.ADMIN_WALLET_ADDRESS;
-    this.usdtContract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'; // USDT TRC20 contract
+    
+    // USDT Contract Addresses
+    if (process.env.USDT_CONTRACT_ADDRESS) {
+      this.usdtContract = process.env.USDT_CONTRACT_ADDRESS;
+    } else {
+      this.usdtContract = this.useTestnet
+        ? 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs' // Shasta Testnet USDT
+        : 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'; // Mainnet USDT
+    }
+    
+    console.log(`[TRC20VerificationService] Network: ${this.useTestnet ? 'Shasta Testnet' : 'Mainnet'}`);
+    console.log(`[TRC20VerificationService] USDT Contract: ${this.usdtContract}`);
   }
 
   // Convert hex address to base58 (TRON address format)

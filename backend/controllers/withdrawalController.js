@@ -78,8 +78,17 @@ exports.requestWithdrawal = async (req, res) => {
         });
       }
     } else if (type === 'investment') {
-      // Get available investments (unlocked after 90 days)
+      // Get available investments (unlocked after 90 days, excluding those in pending withdrawals)
       const now = new Date();
+      
+      // Get pending investment withdrawals to exclude their amounts
+      const pendingInvestmentWithdrawals = await Withdrawal.find({
+        userId: user._id,
+        withdrawalType: 'investment',
+        status: { $in: ['pending', 'approved'] },
+      });
+      const pendingWithdrawalAmount = pendingInvestmentWithdrawals.reduce((sum, w) => sum + w.amount, 0);
+      
       const availableInvestments = await Investment.find({
         userId: user._id,
         status: 'confirmed',
@@ -90,7 +99,8 @@ exports.requestWithdrawal = async (req, res) => {
         ],
       });
 
-      const availableAmount = availableInvestments.reduce((sum, inv) => sum + inv.amount, 0);
+      const totalAvailableAmount = availableInvestments.reduce((sum, inv) => sum + inv.amount, 0);
+      const availableAmount = totalAvailableAmount - pendingWithdrawalAmount;
 
       if (amount > availableAmount) {
         return res.status(400).json({
@@ -98,6 +108,10 @@ exports.requestWithdrawal = async (req, res) => {
           message: `Insufficient available investment. Available: ${availableAmount.toFixed(2)} USDT`,
         });
       }
+
+      // IMMEDIATELY deduct from user's current investment balance
+      user.currentInvestmentBalance = Math.max(0, (user.currentInvestmentBalance || 0) - parseFloat(amount));
+      await user.save();
     }
 
     // Create withdrawal request
@@ -222,17 +236,27 @@ exports.getWithdrawalStats = async (req, res) => {
       };
     });
     
-    // Check if user can withdraw this month
+    // Check if user can withdraw interest this month (only for interest withdrawals)
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const monthlyWithdrawal = await Withdrawal.findOne({
+    const monthlyInterestWithdrawal = await Withdrawal.findOne({
       userId: user._id,
+      withdrawalType: 'interest',
       status: { $in: ['pending', 'approved', 'processed'] },
       requestDate: { $gte: startOfMonth },
     });
 
-    const canWithdrawInterest = !isLocked && !monthlyWithdrawal && user.interestBalance >= 20;
-    const canWithdrawInvestment = !isLocked && availableInvestmentAmount >= 20;
+    // Get pending investment withdrawals to calculate actual available amount
+    const pendingInvestmentWithdrawals = await Withdrawal.find({
+      userId: user._id,
+      withdrawalType: 'investment',
+      status: { $in: ['pending', 'approved'] },
+    });
+    const pendingWithdrawalAmount = pendingInvestmentWithdrawals.reduce((sum, w) => sum + w.amount, 0);
+    const actualAvailableInvestment = Math.max(0, availableInvestmentAmount - pendingWithdrawalAmount);
+
+    const canWithdrawInterest = !isLocked && !monthlyInterestWithdrawal && user.interestBalance >= 20;
+    const canWithdrawInvestment = !isLocked && actualAvailableInvestment >= 20;
 
     res.json({
       success: true,
@@ -244,7 +268,7 @@ exports.getWithdrawalStats = async (req, res) => {
         
         // Investment withdrawal info
         totalInvestment: user.totalInvestment || 0,
-        availableInvestmentAmount: availableInvestmentAmount,
+        availableInvestmentAmount: actualAvailableInvestment, // Show actual available after deducting pending
         lockedInvestmentAmount: lockedInvestmentAmount,
         canWithdrawInvestment: canWithdrawInvestment,
         investmentDetails: investmentDetails,
@@ -252,7 +276,7 @@ exports.getWithdrawalStats = async (req, res) => {
         // General info
         isLocked: isLocked,
         monthlyInterestAccumulated: user.monthlyInterestAccumulated || 0,
-        hasMonthlyWithdrawal: !!monthlyWithdrawal,
+        hasMonthlyWithdrawal: !!monthlyInterestWithdrawal, // Only check interest withdrawals
       },
     });
   } catch (error) {

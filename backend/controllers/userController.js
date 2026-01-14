@@ -22,22 +22,40 @@ if (!admin.apps.length) {
 
 exports.register = async (req, res) => {
   try {
-    const { firebaseUID, mobile } = req.user; // From verifyFirebaseToken middleware
+    const { firebaseUID, mobile: firebaseMobile, email: firebaseEmail, name: firebaseName, picture: firebasePicture, authType } = req.user; // From verifyFirebaseToken middleware
     const { fullName, email } = req.body;
     // Get referral code from body (sent as form field)
     const referralCode = req.body.referralCode || null;
-    const profilePhoto = req.file ? `/uploads/profiles/${req.file.filename}` : '';
+    const profilePhoto = req.file ? `/uploads/profiles/${req.file.filename}` : (firebasePicture || '');
 
-    // Check if user already exists
+    // Determine the primary identifier based on auth type
+    const userMobile = firebaseMobile || '';
+    const userEmail = email || firebaseEmail || '';
+    const userName = fullName || firebaseName || '';
+
+    // Check if user already exists by firebaseUID
     let user = await User.findOne({ firebaseUID });
+
+    // Also check by email for Google/email users to link accounts
+    if (!user && userEmail) {
+      user = await User.findOne({ email: userEmail.toLowerCase() });
+      if (user && user.firebaseUID !== firebaseUID) {
+        // Different Firebase account with same email - update firebaseUID
+        user.firebaseUID = firebaseUID;
+      }
+    }
 
     if (user) {
       // User exists, update profile if provided
-      if (fullName || email || profilePhoto) {
-        if (fullName) user.fullName = fullName;
-        if (email) user.email = email;
+      if (userName || userEmail || profilePhoto) {
+        if (userName) user.fullName = userName;
+        if (userEmail) user.email = userEmail;
         if (profilePhoto) user.profilePhoto = profilePhoto;
-        user.isProfileComplete = !!(fullName && email);
+        if (userMobile && !user.mobile) user.mobile = userMobile;
+        if (authType && !user.authType) user.authType = authType;
+        
+        // Profile is complete if we have either (email) or (mobile) along with name
+        user.isProfileComplete = !!(user.fullName && (user.email || user.mobile));
         await user.save();
       }
       return res.json({
@@ -54,6 +72,7 @@ exports.register = async (req, res) => {
           interestBalance: user.interestBalance,
           accountStatus: user.accountStatus,
           isProfileComplete: user.isProfileComplete,
+          authType: user.authType,
         },
       });
     }
@@ -61,11 +80,12 @@ exports.register = async (req, res) => {
     // Create new user
     user = new User({
       firebaseUID,
-      mobile,
-      fullName: fullName || '',
-      email: email || '',
+      mobile: userMobile,
+      fullName: userName,
+      email: userEmail,
       profilePhoto: profilePhoto || '',
-      isProfileComplete: !!(fullName && email),
+      authType: authType || 'mobile',
+      isProfileComplete: !!(userName && (userEmail || userMobile)),
     });
 
     await user.save();
@@ -135,6 +155,7 @@ exports.register = async (req, res) => {
         platoCoins: user.platoCoins || 0,
         accountStatus: user.accountStatus,
         isProfileComplete: user.isProfileComplete,
+        authType: user.authType,
       },
     });
   } catch (error) {
@@ -179,6 +200,7 @@ exports.getProfile = async (req, res) => {
         lastWithdrawalDate: user.lastWithdrawalDate,
         accountStatus: user.accountStatus,
         isProfileComplete: user.isProfileComplete,
+        authType: user.authType,
         createdAt: user.createdAt,
       },
     });

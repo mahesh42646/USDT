@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [authType, setAuthType] = useState('mobile');
   const router = useRouter();
   const { login, isAuthenticated, userData, loading: authLoading } = useAuth();
 
@@ -25,7 +26,13 @@ export default function RegisterPage() {
       return;
     }
 
-    // Check if Firebase user is authenticated
+    // Get auth type from localStorage
+    const storedAuthType = localStorage.getItem('auth_type');
+    if (storedAuthType) {
+      setAuthType(storedAuthType);
+    }
+
+    // Check if Firebase user is authenticated and pre-fill data
     const checkAuth = async () => {
       const { auth } = await import('@/config/firebase');
       const user = auth.currentUser;
@@ -35,6 +42,17 @@ export default function RegisterPage() {
         const token = localStorage.getItem('firebase_token');
         if (!token) {
           router.push('/auth/login');
+        }
+      } else {
+        // Pre-fill form with Google/Email user data
+        if (user.displayName && !formData.fullName) {
+          setFormData(prev => ({ ...prev, fullName: user.displayName }));
+        }
+        if (user.email && !formData.email) {
+          setFormData(prev => ({ ...prev, email: user.email }));
+        }
+        if (user.photoURL && !preview) {
+          setPreview(user.photoURL);
         }
       }
     };

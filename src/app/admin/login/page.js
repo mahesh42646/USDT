@@ -38,7 +38,7 @@ export default function AdminLogin() {
 
     try {
       await login(formData.email, formData.password);
-      router.push('/admin/dashboard');
+        router.push('/admin/dashboard');
     } catch (err) {
       setError(err.message || 'Invalid email or password');
       setLoading(false);
@@ -57,7 +57,7 @@ export default function AdminLogin() {
         </div>
       </div>
     );
-  }
+    }
 
   return (
     <div className={styles.loginContainer}>

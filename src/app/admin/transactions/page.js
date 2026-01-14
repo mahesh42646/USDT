@@ -194,7 +194,18 @@ function TransactionHistory() {
                           {tx.withdrawalType && ` (${tx.withdrawalType})`}
                         </span>
                       </td>
-                      <td className="fw-semibold">{formatNumber(tx.amount)} USDT</td>
+                      <td className="fw-semibold">
+                        {tx.type === 'investment' && tx.paymentCurrency && tx.paymentCurrency !== 'USD' ? (
+                          <div>
+                            <div>${formatNumber(tx.amount)} USD</div>
+                            <small className="text-muted">
+                              Paid: {formatNumber(tx.paymentAmount || tx.amount)} {tx.paymentCurrency}
+                            </small>
+                          </div>
+                        ) : (
+                          `$${formatNumber(tx.amount)} USD`
+                        )}
+                      </td>
                       <td>
                         <span className={`badge bg-${getStatusBadgeColor(tx.status)}`}>
                           {tx.status}

@@ -294,8 +294,10 @@ export default function ManageUserModal({ userData, onClose, onUpdate }) {
                       <div className={styles.profileInfo}>
                         <h4>{user.fullName || 'N/A'}</h4>
                         <p>{user.mobile} {user.email && `• ${user.email}`}</p>
-                        <p className="text-muted small">Referral Code: {user.referralCode}</p>
+                        <p className="text-muted small font-weight-bold  ">Referral Link: <a className="text-primary"  href={`/register?referralCode=${user.referralCode}`} target="_blank" rel="noopener noreferrer">{`https://plato.co.in/register?referralCode=${user.referralCode}`}</a></p>
+                        <p className="text-muted small">Account Status:  {user.accountStatus}</p>
                       </div>
+                    
                     </div>
 
                     <div className={styles.profileStats}>
@@ -319,14 +321,7 @@ export default function ManageUserModal({ userData, onClose, onUpdate }) {
                         <div className={styles.statLabel}>Active Referrals</div>
                         <div className={styles.statValue}>{user.directActiveReferrals || 0}</div>
                       </div>
-                      <div className={styles.statCard}>
-                        <div className={styles.statLabel}>Account Status</div>
-                        <div className={styles.statValue}>
-                          <span className={`badge bg-${user.accountStatus === 'active' ? 'success' : 'danger'}`}>
-                            {user.accountStatus}
-                          </span>
-                        </div>
-                      </div>
+                    
                     </div>
 
                     <div className={styles.formSection}>

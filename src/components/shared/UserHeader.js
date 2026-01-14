@@ -4,24 +4,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSettings } from '@/context/SettingsContext';
+import { useAuth } from '@/context/AuthContext';
 import { getPlatformName } from '@/utils/constants';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import styles from './UserHeader.module.css';
 
 export default function UserHeader() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState('');
   const [showSidebar, setShowSidebar] = useState(false);
   const pathname = usePathname();
   const { settings } = useSettings();
+  const { isAuthenticated, userData, logout } = useAuth();
 
-  useEffect(() => {
-    // Check authentication status (will be replaced with actual auth context)
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    setIsLoggedIn(!!token);
-    // Set user name from auth context when available
-    setUserName('User');
-  }, []);
+  const userName = userData?.fullName || userData?.mobile || 'User';
 
   // Prevent body scroll when sidebar is open
   useEffect(() => {
@@ -45,9 +39,7 @@ export default function UserHeader() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-    window.location.href = '/auth/login';
+    logout();
   };
 
   const navItems = [
@@ -69,7 +61,7 @@ export default function UserHeader() {
       <header className={`navbar navbar-expand-lg navbar-light bg-white shadow-sm  ${styles.userHeader}`}>
         <div className="container">
           {/* Logo */}
-          <Link href={isLoggedIn ? '/user/dashboard' : '/'} className="navbar-brand d-flex align-items-center">
+          <Link href={isAuthenticated ? '/user/dashboard' : '/'} className="navbar-brand d-flex align-items-center">
             <div className={styles.logoIcon}>
               <i className="bi bi-currency-bitcoin"></i>
             </div>
@@ -109,7 +101,7 @@ export default function UserHeader() {
 
             {/* Action Buttons */}
             <div className="d-flex align-items-center gap-3">
-              {isLoggedIn ? (
+              {isAuthenticated ? (
                 <>
                   <Link href="/user/dashboard" className={`btn btn-outline-primary ${styles.actionBtn}`}>
                     <i className="bi bi-grid-3x3-gap me-2"></i>
@@ -202,7 +194,7 @@ export default function UserHeader() {
                 ))}
               </div>
               {/* User Nav Items (if logged in) */}
-              {isLoggedIn && (
+              {isAuthenticated && (
                 <div>
                   <h6 className="text-muted small px-3 mb-2">My Account</h6>
                   {userNavItems.map((item) => (
@@ -225,7 +217,7 @@ export default function UserHeader() {
               )}
             </nav>
             <div className={styles.sidebarFooter}>
-              {isLoggedIn ? (
+              {isAuthenticated ? (
                 <>
                   <div className={`${styles.profileCircle} ${styles.sidebarProfile} d-flex align-items-center justify-content-center mb-3`}>
                     {userName.charAt(0).toUpperCase()}

@@ -282,9 +282,7 @@ function ReferralsPage() {
             <div className="alert alert-danger" role="alert">
               {error}
             </div>
-          )}
-
-          {referrals.length > 0 ? (
+          )}          {referrals.length > 0 ? (
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>

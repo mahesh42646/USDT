@@ -19,7 +19,7 @@ function AdminLayoutContent({ children }) {
     // Only redirect if auth check is complete and user is not authenticated
     if (!loading && !isLoginPage && !isAuthenticated) {
       router.push('/admin/login');
-    }
+  }
   }, [loading, isAuthenticated, isLoginPage, router]);
 
   // Handle window resize for sidebar

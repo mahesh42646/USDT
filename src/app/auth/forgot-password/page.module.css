@@ -1,0 +1,128 @@
+.authContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background) 100%);
+  padding: var(--spacing-lg);
+}
+
+.authCard {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-2xl);
+  width: 100%;
+  max-width: 450px;
+}
+
+.authCard h2 {
+  color: var(--foreground);
+  font-size: var(--font-size-2xl);
+}
+
+.authCard .form-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground);
+  margin-bottom: var(--spacing-sm);
+}
+
+.authCard .form-control {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  transition: border-color var(--transition-base);
+}
+
+.authCard .form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(107, 70, 193, 0.25);
+}
+
+.authCard .input-group-text {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-right: none;
+  color: var(--foreground-secondary);
+}
+
+.authCard .btn-primary {
+  padding: var(--spacing-md);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+}
+
+.authCard .btn-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+}
+
+.authCard .btn-link:hover {
+  color: var(--accent-light);
+}
+
+.authCard .alert {
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Icon Wrapper */
+.iconWrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--spacing-lg);
+}
+
+.iconWrapper i {
+  font-size: 2rem;
+  color: var(--white);
+}
+
+/* Success Box */
+.successBox {
+  text-align: center;
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--spacing-lg);
+}
+
+.successIcon i {
+  font-size: 2.5rem;
+  color: var(--white);
+}
+
+.successBox h5 {
+  color: #10B981;
+  margin-bottom: var(--spacing-md);
+}
+
+@media (max-width: 575.98px) {
+  .authCard {
+    padding: var(--spacing-xl);
+  }
+
+  .iconWrapper,
+  .successIcon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .iconWrapper i,
+  .successIcon i {
+    font-size: 1.75rem;
+  }
+}

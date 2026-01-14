@@ -125,3 +125,34 @@
   }
 }
 
+.logoutSection {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border);
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--danger, #dc3545);
+  color: var(--danger, #dc3545);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  gap: var(--spacing-md);
+}
+
+.logoutBtn:hover {
+  background: var(--danger, #dc3545);
+  color: var(--white);
+}
+
+.logoutBtn i {
+  font-size: 1.25rem;
+  width: 24px;
+  text-align: center;
+}

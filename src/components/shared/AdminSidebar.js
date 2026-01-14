@@ -46,6 +46,13 @@ export default function AdminSidebar({ isOpen }) {
       type: 'link'
     },
     {
+      key: 'fund-sweep',
+      name: 'Fund Sweep',
+      icon: 'bi-wallet2',
+      path: '/admin/fund-sweep',
+      type: 'link'
+    },
+    {
       key: 'settings',
       name: 'Settings',
       icon: 'bi-gear',
@@ -62,15 +69,15 @@ export default function AdminSidebar({ isOpen }) {
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <nav className={styles.sidebarNav}>
         {menuItems.map((item) => (
-          <Link
-            key={item.key}
-            href={item.path}
-            className={`${styles.navLink} ${isActive(item.path) ? styles.active : ''}`}
-          >
-            <i className={`bi ${item.icon} ${styles.navIcon}`}></i>
-            <span>{item.name}</span>
-          </Link>
-        ))}
+              <Link
+                key={item.key}
+                href={item.path}
+                className={`${styles.navLink} ${isActive(item.path) ? styles.active : ''}`}
+              >
+                <i className={`bi ${item.icon} ${styles.navIcon}`}></i>
+                <span>{item.name}</span>
+                      </Link>
+                    ))}
       </nav>
     </aside>
   );

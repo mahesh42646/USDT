@@ -9,8 +9,7 @@ const userSchema = new mongoose.Schema({
   },
   mobile: {
     type: String,
-    required: true,
-    unique: true,
+    sparse: true, // Allow null/empty for email users
     index: true,
   },
   fullName: {
@@ -19,8 +18,14 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    default: '',
+    sparse: true, // Allow null/empty for mobile users
     lowercase: true,
+    index: true,
+  },
+  authType: {
+    type: String,
+    enum: ['mobile', 'email', 'google'],
+    default: 'mobile',
   },
   profilePhoto: {
     type: String,

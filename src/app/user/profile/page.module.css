@@ -75,9 +75,7 @@
   background: var(--danger);
   color: var(--white);
   border-color: var(--danger);
-}
-
-.badge {
+}.badge {
   font-weight: var(--font-weight-normal);
   padding: 0.25rem 0.5rem;
 }@media (max-width: 767.98px) {

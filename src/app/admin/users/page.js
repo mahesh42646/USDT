@@ -168,14 +168,14 @@ function UsersList() {
                       <td>{formatDate(user.createdAt)}</td>
                       <td>
                         <div className="d-flex gap-2 flex-wrap">
-                          <button
+                          {/* <button
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => handleEdit(user)}
                             title="Edit"
                           >
                             <i className="bi bi-pencil"></i>
-                          </button>
-                          <button
+                          </button> */}
+                          {/* <button
                             className={`btn btn-sm btn-outline-${user.accountStatus === 'active' ? 'warning' : 'success'}`}
                             onClick={() => handleToggleStatus(user.id)}
                             disabled={actionLoading[user.id]}
@@ -186,8 +186,8 @@ function UsersList() {
                             ) : (
                               <i className={`bi bi-${user.accountStatus === 'active' ? 'lock' : 'unlock'}`}></i>
                             )}
-                          </button>
-                          <button
+                          </button> */}
+                          {/* <button
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDelete(user.id)}
                             disabled={actionLoading[user.id]}
@@ -198,7 +198,7 @@ function UsersList() {
                             ) : (
                               <i className="bi bi-trash"></i>
                             )}
-                          </button>
+                          </button> */}
                           <button
                             className="btn btn-sm btn-outline-info"
                             onClick={() => handleManage(user.id)}
@@ -208,7 +208,7 @@ function UsersList() {
                             {actionLoading[`manage-${user.id}`] ? (
                               <span className="spinner-border spinner-border-sm" role="status"></span>
                             ) : (
-                              <i className="bi bi-gear"></i>
+                              <i className="bi bi-gear"> Manage User</i> 
                             )}
                           </button>
                         </div>

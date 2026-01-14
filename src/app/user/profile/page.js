@@ -255,9 +255,7 @@ function ProfilePage() {
                 </p>
               </div>
             </div>
-          </div>
-
-          {/* Investment Summary */}
+          </div>          {/* Investment Summary */}
           <div className="card mt-4">
             <div className="card-header">
               <h5 className="mb-0">
