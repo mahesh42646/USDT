@@ -2,7 +2,22 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+const fs = require('fs');
+
+// Load environment variables
+// Priority: .env.production (if exists) > .env
+const productionEnvPath = path.join(__dirname, '.env.production');
+const defaultEnvPath = path.join(__dirname, '.env');
+
+let envFile = '.env';
+if (fs.existsSync(productionEnvPath)) {
+  envFile = '.env.production';
+} else if (fs.existsSync(defaultEnvPath)) {
+  envFile = '.env';
+}
+
+require('dotenv').config({ path: path.join(__dirname, envFile) });
+console.log(`✅ Loaded environment from: ${envFile}`);
 
 // Initialize daily interest cron job
 const dailyInterestCron = require('./cron/dailyInterestCron');
