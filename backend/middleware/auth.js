@@ -70,8 +70,14 @@ exports.verifyFirebaseToken = async (req, res, next) => {
       // Fallback to REST API verification if Admin SDK fails or not initialized
       if (!decodedToken) {
         try {
+          const apiKey = process.env.FIREBASE_API_KEY;
+          if (!apiKey) {
+            console.error('FIREBASE_API_KEY not configured!');
+            throw new Error('Server configuration error: Firebase API key missing');
+          }
+          
           const response = await fetch(
-            `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=${process.env.FIREBASE_API_KEY || ''}`,
+            `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=${apiKey}`,
             {
               method: 'POST',
               headers: {
@@ -81,11 +87,13 @@ exports.verifyFirebaseToken = async (req, res, next) => {
             }
           );
           
+          const data = await response.json();
+          
           if (!response.ok) {
-            throw new Error('Token verification failed');
+            console.error('Firebase REST API error:', data.error?.message || 'Unknown error');
+            throw new Error(data.error?.message || 'Token verification failed');
           }
           
-          const data = await response.json();
           if (data.users && data.users.length > 0) {
             const user = data.users[0];
             decodedToken = {
@@ -103,11 +111,8 @@ exports.verifyFirebaseToken = async (req, res, next) => {
             throw new Error('User not found in token');
           }
         } catch (restError) {
-          // Only log if FIREBASE_API_KEY is configured
-          if (process.env.FIREBASE_API_KEY) {
-            console.error('REST API verification error:', restError.message);
-          }
-          throw new Error('Token verification failed');
+          console.error('REST API verification error:', restError.message);
+          throw new Error(restError.message || 'Token verification failed');
         }
       }
       

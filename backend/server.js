@@ -90,7 +90,16 @@ app.use('/api/settings', require('./routes/settings'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+  res.json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    config: {
+      hasFirebaseApiKey: !!process.env.FIREBASE_API_KEY,
+      hasFirebaseProjectId: !!process.env.FIREBASE_PROJECT_ID,
+      nodeEnv: process.env.NODE_ENV,
+      frontendUrl: process.env.FRONTEND_URL,
+    }
+  });
 });
 
 // Error handling middleware
