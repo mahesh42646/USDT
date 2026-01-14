@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -37,7 +37,29 @@ const countryCodes = [
   { code: '+20', country: 'Egypt', flag: '🇪🇬' },
 ];
 
+// Loading fallback component
+function LoginLoading() {
+  return (
+    <div className={styles.authContainer}>
+      <div className="text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main login page wrapped in Suspense
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   // Auth method tab state
   const [authMethod, setAuthMethod] = useState('mobile'); // 'mobile', 'email', 'google'
   

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -9,7 +9,29 @@ import { useAuth } from '@/context/AuthContext';
 import { api } from '@/utils/api';
 import styles from './page.module.css';
 
+// Loading fallback component
+function RegisterLoading() {
+  return (
+    <div className={styles.authContainer}>
+      <div className="text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main register page wrapped in Suspense
 export default function RegisterEmailPage() {
+  return (
+    <Suspense fallback={<RegisterLoading />}>
+      <RegisterEmailPageContent />
+    </Suspense>
+  );
+}
+
+function RegisterEmailPageContent() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
